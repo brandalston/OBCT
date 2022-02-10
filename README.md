@@ -1,14 +1,22 @@
 # Optimal Binary Classification Trees
 
-Code for the paper "Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees".
+Code for the paper [Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink)
 
-This code uses python3 (version 3.6 and higher) and requires the Gurobi9.x solver. Required packages are outlined in `requirements.txt`.
+This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/downloads/gurobi-optimizer-eula/) solver. Required python packages are outlined in `requirements.txt`.
 
 *** 
 ***
-# Summary of Repository
+
+## Summary of Repository
+- `Code` contains the code of the formulations **MCF1**, **MCF2**, **CUT1**, **CUT2** and **AGHA**
+  - `OBCT.py` contains the formulations of each model for solving using Gurobi9.x
+  - `model_runs.py` contains the code necessary to create, solve, and report results of each instance called by the user
+  - `TREE.py` creates the necessary tree information including path, child, and other information
+  - `SPEED_UP.py` contains the code for the callbacks used in user fractional separation procedures
+  - `RESULTS.py` contains the code for viewing model decision variable results and generating the .csv results files among other model results
+
 - `results_figures` contains the generated .png files for experimental results
-- `results_data_files` contains the generated .csv files for experimental results
+- `results_files` stores the generated .csv files with model metrics
 - `Datasets` contains the datasets used for generating experimental results. It should also be used as the folder where user datasets are stored
 
 ***
@@ -17,14 +25,14 @@ This code uses python3 (version 3.6 and higher) and requires the Gurobi9.x solve
 ## Running Code
 
 - Ensure the latest versions of the packages in `requirements.txt` are installed
-- For  running an instance of OBCT run the main function in `model_runs.py` with the following arguments
-    - d : list of name of data files
-    - h : list of maximum depth of the tree
-    - t : time limit in s
+- For  running an instance of OBCT run the `main` function in `model_runs.py` with the following arguments
+    - d : list of names of dataset .csv files
+    - h : list of maximum depth of trained trees
+    - t : gurobi model time limit in s
     - m : list of models to use
     - e : list of model extras, if applicable
-    - r : number of repeats
-    - f : results output file
+    - r : number of repeat trees to generate for each model
+    - f : string of results output file .csv
 
 You can call the `model_runs.py` main function within a python file as follows,
 
@@ -44,78 +52,34 @@ To run from terminal do the following,
 ```bash
 python3 model_runs.py -d ['data.csv'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -f 'results.csv'
 ```
+Note:
+- We assume the target column is labeled 'target'
+- Change the code in `model_runs.py` to change the label column
+- If results output file `-f file` is `None` the `models_run.py` automatically generates a .csv results file with the parameters of the function call as the file name
+
+***
+
+### CUT Models Functionality
+
+We offer the functionality to control both integer and fractional separation using the three types of violating rules in models CUT1 and CUT2.
 
 By default, models CUT1 and CUT2 invoke gurobi lazy parameters = 3 for separation constraints. There are a number of ways to invoke the fractional separation procedures outlined in the paper.
 
-For fractional procedures use the following syntax where # specifies the user type of fractional cut (1,2,3)
-- CUT1-FRAC-#
-- CUT1-FRAC-#-ROOT for only adding user cuts at the root node of the branch and bound tree
-- 1 = all violating cuts in 1,v path
-- 2 = first found violating cut in 1,v path
-- 3 = most violating cut closest to root in 1,v path
+For fractional procedures use the following syntax where `#` specifies the user type of fractional cut (1,2,3)
+- `CUT1-FRAC-#`
+  - `CUT1-FRAC-#-ROOT` for only adding user cuts at the root node of the branch and bound tree
+- `1` = all violating cuts in 1,v path
+- `2` = first found violating cut in 1,v path
+- `3` = most violating cut closest to root in 1,v path
 - The fractional separation procedure is independent of the CUT model specified (i.e. can mix and match)
+- ex. `CUT1-FRAC-1, CUT2-FRAC-3-ROOT`
 
-Replace `models` in `TEST_CODE.py` with the following for fractional separation in CUT models
-```python
-models = ['CUT1-FRAC1','CUT2-FRAC-3-ROOT']
-```
-
-# Strong Optimal Classification Trees
+To invoke such functionality replace CUT models in `models` with the following
+- ex. `CUT1-BOTH-I2-F2`, `CUT2-BOTH-I1-F3`
+- `#` specifies the violating rules type
+- `BOTH` must be in the model name
+- Must specify a type for both integral and fractional
+  - The integral and fractional separation procedures are independent of the CUT model specified (i.e. can mix and match)
+- Cannot use `FRAC-#`, `INT-#` syntax must use `-BOTH-I#-F#`
 
 ![Screenshot](logo.png)
-
-Code for the paper ''[Strong Optimal Classification Trees](https://sites.google.com/view/sina-aghaei/home)''.
-
-The code will run in python3 ( version 6 and higher) and require [Gurobi9.x](https://www.gurobi.com/downloads/gurobi-optimizer-eula/) solver. The required packages are listed in `requirements.txt`.
-
-***
-
-## Overview
-
-The content of this repository is as follows:
-
-- `Code` contains the implementation of approaches **FlowOCT** and **BendersOCT**:
-
-    - `FlowOCT.py` and `BendersOCT.py` include the formulation of each approach in gurobipy.
-
-    - `FlowOCTReplication.py` and `BendersOCTReplication.py` contains the replication code for each approach which is responsible for creating and solving the problem and producing result
-
-    - We have some utility files as follows
-      - `Tree.py` which creates the binary tree
-      - `logger.py` logs the output of console into a text file
-- `Results` contains the experiments raw results.
-
-- `plots` contains the R script for generating figures and tables from the tabular results.
-
-- `DataSets` contains all datasets used for the experiments in the paper
-
-
-***
-
-## How to Run the Code
-
-- First install the required packages in the `requirements.txt`
-- For  running an instance of FlowOCT (BendersOCT) run the main function in `FlowOCTReplication.py` (`BendersOCTReplication.py`) with the following arguments
-    - f : name of the dataset
-    - d : maximum depth of the tree
-    - t : time limit
-    - l : value of _lambda
-    - i : sample (for shuffling and splitting data)
-    - c : 1 if we do calibration; in this case we train our model on 50% of the data otherwise we train on 75% of the data
-
-You can call the main function within a python file as follows (This is what we do in `run_exp.py`
-
-```python
-import FlowOCTReplication
-FlowOCTReplication.main(["-f", 'monk1_enc.csv', "-d", 2, "-t", 3600, "-l", 0, "-i", 1, "-c", 1])
-```
-or you could run it from terminal    
-
-```bash
-python3 FlowOCTReplication.py -f monk1_enc.csv -d 2 -t 3600 -l 0 -i 1 -c 1
-```
-
-The result of each instance would get stored in a csv file in `./Results/`.
-
-Remember that in the replication files we assume that the name of the class label column is `target`. If you want to use a dataset of your own choice,
-change the hard-coded label name to the desired name.
