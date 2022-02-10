@@ -82,4 +82,7 @@ To invoke such functionality replace CUT models in `models` with the following
   - The integral and fractional separation procedures are independent of the CUT model specified (i.e. can mix and match)
 - Cannot use `FRAC-#`, `INT-#` syntax must use `-BOTH-I#-F#`
 
-![Screenshot](logo.png)
+***
+***
+
+![Screenshot](/Users/brandonalston/Desktop/CAAM_logo.png)
