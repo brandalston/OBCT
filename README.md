@@ -26,19 +26,19 @@ This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](htt
 
 - Ensure the latest versions of the packages in `requirements.txt` are installed
 - For  running an instance of OBCT run the `main` function in `model_runs.py` with the following arguments
-    - d : list of names of dataset .csv files
-    - h : list of maximum depth of trained trees
+    - d : str list of names of dataset files
+    - h : int list of maximum depth of trained trees
     - t : gurobi model time limit in s
-    - m : list of models to use
-    - e : list of model extras, if applicable
+    - m : str list of models to use
+    - e : str list of model extras, if applicable
     - r : number of repeat trees to generate for each model
-    - f : string of results output file .csv
+    - f : str of results output file .csv
 
 You can call the `model_runs.py` main function within a python file as follows,
 
 ```python
 import model_runs
-data_names = ['data.csv']
+data_names = ['monk1_enc','breast-cancer_enc']
 heights = [2,3,4,5]
 models = ['MCF1','MCF2', 'CUT1','CUT2']
 time_limit = 3600
@@ -50,7 +50,7 @@ model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",e
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['data.csv'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -f 'results.csv'
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -f 'results.csv'
 ```
 Note:
 - We assume the target column is labeled 'target'
@@ -85,4 +85,4 @@ To invoke such functionality replace CUT models in `models` with the following
 ***
 ***
 
-![Screenshot](/Users/brandonalston/Desktop/CAAM_logo.png)
+![Screenshot](CAAM_logo.png)
