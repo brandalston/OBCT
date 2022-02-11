@@ -1,6 +1,6 @@
 from gurobipy import *
-import SPEED_UP as OSP
-import RESULTS as OR
+import SPEED_UP
+import RESULTS
 import time
 
 
@@ -68,11 +68,13 @@ class OBCT:
         if 'BOTH' in self.cb_type:
             print('User INT and FRAC lazy cuts')
             self.eps, self.epsval = -4, 10 ** (-4)
-            if 'ROOT' in self.cb_type: self.rootnode = True
+            if 'ROOT' in self.cb_type:
+                self.rootnode = True
             self.tree.Lazycuts = True
         elif 'FRAC' in self.cb_type:
             self.eps, self.epsval = -4, 10 ** (-4)
-            if 'ROOT' in self.cb_type: self.rootnode = True
+            if 'ROOT' in self.cb_type:
+                self.rootnode = True
             print('User FRAC cuts (ROOT: '+str(self.rootnode)+')')
         elif 'INT' in self.cb_type:
             print('User INT lazy = 3 cuts')
@@ -124,7 +126,7 @@ class OBCT:
             quicksum(self.S[i, v] for i in self.datapoints for v in self.tree.B + self.tree.L if v != 0),
             GRB.MAXIMIZE)
 
-        #cPruned vertices not assigned to class
+        # Pruned vertices not assigned to class
         # P[v] = sum(W[v,k], k in K) for v in V
         self.model.addConstrs(self.P[v] == quicksum(self.W[v, k] for k in self.classes)
                               for v in self.tree.B + self.tree.L)
@@ -439,7 +441,7 @@ class OBCT:
                                               for i in self.datapoints)
 
         # Warm Start
-        if self.warm_start is not None: OSP.warm_start(self, self.warm_start)
+        if self.warm_start is not None: SPEED_UP.warm_start(self, self.warm_start)
 
         # pass to model DV for callback purposes
         self.model._Q = self.Q
@@ -537,20 +539,20 @@ class OBCT:
             if 'FRAC' in self.cb_type:
                 # User cb.Cut FRAC S-Q cuts
                 self.model.Params.PreCrush = 1
-                if '1' in self.cb_type: self.model.optimize(OSP.frac1)
-                if '2' in self.cb_type: self.model.optimize(OSP.frac2)
-                if '3' in self.cb_type: self.model.optimize(OSP.frac3)
+                if '1' in self.cb_type: self.model.optimize(SPEED_UP.frac1)
+                if '2' in self.cb_type: self.model.optimize(SPEED_UP.frac2)
+                if '3' in self.cb_type: self.model.optimize(SPEED_UP.frac3)
             if 'BOTH' in self.cb_type:
                 # user cb.Lazy FRAC and INT SQ cuts
                 self.model.Params.LazyConstraints = 1
                 self.model.Params.PreCrush = 1
-                self.model.optimize(OSP.both)
+                self.model.optimize(SPEED_UP.both)
             if 'INT' in self.cb_type:
                 # User cb.Lazy INT S-Q cuts
                 self.model.Params.LazyConstraints = 1
-                if '1' in self.cb_type: self.model.optimize(OSP.int1)
-                if '2' in self.cb_type: self.model.optimize(OSP.int2)
-                if '3' in self.cb_type: self.model.optimize(OSP.int3)
+                if '1' in self.cb_type: self.model.optimize(SPEED_UP.int1)
+                if '2' in self.cb_type: self.model.optimize(SPEED_UP.int2)
+                if '3' in self.cb_type: self.model.optimize(SPEED_UP.int3)
             if 'GRB' in self.cb_type:
                 self.model.optimize()
             if 'ALL' in self.cb_type:
@@ -561,7 +563,7 @@ class OBCT:
         else: print('Time limit reached. ('+str(time.strftime("%I:%M %p", time.localtime()))+')\n')
 
         # uncomment to print tree assignments and training set source-terminal path
-        # OR.dv_results(self.model, self.tree, self.features, self.classes, self.datapoints)
+        # RESULTS.dv_results(self.model, self.tree, self.features, self.classes, self.datapoints)
 
         if self.model._numcb > 0:
             self.model._avgcuts = self.model._numcuts / self.model._numcb

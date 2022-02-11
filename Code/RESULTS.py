@@ -53,12 +53,17 @@ def tree_check(tree):
     # check for each class node v
     # all nodes n in ancestors of v are branching nodes
     # all children c of v are pruned
-    class_nodes = {n: tree.DG_prime.nodes[n]['class'] for n in tree.DG_prime.nodes if 'class' in tree.DG_prime.nodes[n]}
-    branch_nodes = {n: tree.DG_prime.nodes[n]['branch on feature'] for n in tree.DG_prime.nodes if 'branch on feature' in tree.DG_prime.nodes[n]}
-    pruned_nodes = {n: tree.DG_prime.nodes[n]['pruned'] for n in tree.DG_prime.nodes if 'pruned' in tree.DG_prime.nodes[n]}
+    class_nodes = {n: tree.DG_prime.nodes[n]['class']
+                   for n in tree.DG_prime.nodes if 'class' in tree.DG_prime.nodes[n]}
+    branch_nodes = {n: tree.DG_prime.nodes[n]['branch on feature']
+                    for n in tree.DG_prime.nodes if 'branch on feature' in tree.DG_prime.nodes[n]}
+    pruned_nodes = {n: tree.DG_prime.nodes[n]['pruned']
+                    for n in tree.DG_prime.nodes if 'pruned' in tree.DG_prime.nodes[n]}
     for v in class_nodes.keys():
-        if not (all(n in branch_nodes.keys() for n in tree.path[v][:-1])): return False
-        if not (all(c in pruned_nodes.keys() for c in tree.child[v])): return False
+        if not (all(n in branch_nodes.keys() for n in tree.path[v][:-1])):
+            return False
+        if not (all(c in pruned_nodes.keys() for c in tree.child[v])):
+            return False
 
 
 def model_acc(tree, model, data):
@@ -89,13 +94,15 @@ def model_acc(tree, model, data):
                 if class_nodes[current_node] == results[i][1]:
                     acc += 1
                     results[i].append('correct')
-            else: results[i][0] = 'ERROR'
+            else:
+                results[i][0] = 'ERROR'
     return acc, results
 
 
 def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file):
     node_assign(opt_model, tree)
-    if tree_check(tree=tree): print('Invalid Tree!!')
+    if tree_check(tree=tree):
+        print('Invalid Tree!!')
     nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
     plt.savefig(fig_file)
     test_acc, test_assignments = model_acc(tree=tree, model=opt_model, data=test_set)
@@ -129,7 +136,8 @@ def pareto_frontier(data, models):
                 best_acc, max_features = sub_data.at[i, 'Out-Acc'], sub_data.at[i, 'Max Features']
         ticker += 31
 
-    dominating_points = pd.DataFrame.from_dict(dom_points, orient='index', columns=['Max Branching Nodes', 'Out-Acc', 'Model'])
+    dominating_points = pd.DataFrame.from_dict(dom_points, orient='index',
+                                               columns=['Max Branching Nodes', 'Out-Acc', 'Model'])
     return dominating_points
 
 
