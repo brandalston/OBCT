@@ -50,10 +50,10 @@ model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",e
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -f 'results.csv'
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -f 'results.csv'
 ```
 Note:
-- We assume the target column is labeled 'target'
+- We assume the target column is labeled `'target'`
 - Change the code in `model_runs.py` to change the label column
 - If results output file `-f file` is `None` the `models_run.py` automatically generates a .csv results file with the parameters of the function call as the file name
 
@@ -74,27 +74,38 @@ For fractional procedures use the following syntax where `#` specifies the user 
 - The fractional separation procedure is independent of the CUT model specified (i.e. can mix and match)
 - ex. `CUT1-FRAC-1, CUT2-FRAC-3-ROOT`
 
-To invoke such functionality replace CUT models in `models` with the following
-- ex. `CUT1-BOTH-I2-F2`, `CUT2-BOTH-I1-F3`
+We also control integer and fractional separation using gurobi callback. To invoke such functionality replace CUT models in `models` with the following
+- ex. `CUT1-BOTH-I2-F2`, `CUT2-BOTH-I1-F3`, `CUT2-BOTH-I3-F1-ROOT`
 - `#` specifies the violating rules type
 - `BOTH` must be in the model name
 - Must specify a type for both integral and fractional
   - The integral and fractional separation procedures are independent of the CUT model specified (i.e. can mix and match)
 - Cannot use `FRAC-#`, `INT-#` syntax must use `-BOTH-I#-F#`
-&
+
 ***
 ### Model Extras Functionality
-To invoke the ``-e model_extras`` parameter use the following guide. Each choice used should be placed in a list named ``model_extras``
-- For fixing DV based on unreachable nodes
-    - ``'fixing'``
-- For no more than ``k`` features used in the DT
-  - ``'max_features-k``
+To invoke the `-e model_extras` parameter use the following guide. Each choice used should be placed in a `list` named `model_extras`
+- ex. `model_extras = ['fixing','max_features_23','single use']`
+- Fixing DV based on unreachable nodes
+    - `'fixing'`
+- No more than `k` features used in the DT
+  - `'max_features_k`
 - Conflict contraints
-  - ``'conflict'``
+  - `'conflict_constraints'`
 - Each future used once in DT
-  - ``'single use'``
-- Super feature relationship in parent, child branching nodes
-  - ``'super feature'``
+  - `'single use'`
+- Super feature relationship in parent, child branching vertices
+  - `'super_feature'`
+- Calibration which uses the second objective function as a constraint and generates the pareto frontier
+  - `'calibration'`
+  - First generate a 25% calibration training set for finding calibrated `max_features_k*` parameter
+  - Each `max_features_k-1` DT is used as a warm for the `max_features_k` DT
+  - The best in-sample-accuracy `max_features_k*` is used as the calibrated decision tree
+    - Note: `max_features_k*` replaces any user specified `max_features`
+- Warm start models using randomly assigned tree 
+  - `'warm start'`
+- Note: `'calibration'` and `'warm start'` cannot both be used in `model_extras`
+
 ***
 ***
 
