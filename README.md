@@ -26,13 +26,13 @@ This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](htt
 
 - Ensure the latest versions of the packages in `requirements.txt` are installed
 - For  running an instance of OBCT run the `main` function in `model_runs.py` with the following arguments
-    - d : str list of names of dataset files
-    - h : int list of maximum depth of trained trees
-    - t : gurobi model time limit in s
-    - m : str list of models to use
-    - e : str list of model extras, if applicable
-    - r : number of repeat trees to generate for each model
-    - f : str of results output file .csv
+    - d : str list, names of dataset files
+    - h : int list, maximum depth of trained trees
+    - t : float, gurobi model time limit in s
+    - m : str list, models to use
+    - e : str list, model extras, if applicable
+    - r : int, number of repeat trees to generate for each model
+    - f : str, results output file .csv
 
 You can call the `model_runs.py` main function within a python file as follows,
 
@@ -81,7 +81,20 @@ To invoke such functionality replace CUT models in `models` with the following
 - Must specify a type for both integral and fractional
   - The integral and fractional separation procedures are independent of the CUT model specified (i.e. can mix and match)
 - Cannot use `FRAC-#`, `INT-#` syntax must use `-BOTH-I#-F#`
-
+&
+***
+### Model Extras Functionality
+To invoke the ``-e model_extras`` parameter use the following guide. Each choice used should be placed in a list named ``model_extras``
+- For fixing DV based on unreachable nodes
+    - ``'fixing'``
+- For no more than ``k`` features used in the DT
+  - ``'max_features-k``
+- Conflict contraints
+  - ``'conflict'``
+- Each future used once in DT
+  - ``'single use'``
+- Super feature relationship in parent, child branching nodes
+  - ``'super feature'``
 ***
 ***
 
