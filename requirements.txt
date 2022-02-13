@@ -4,3 +4,5 @@ pandas
 networkx
 sklearn
 matplotlib
+graphviz
+pydot
