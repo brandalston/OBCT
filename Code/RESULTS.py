@@ -66,12 +66,12 @@ def tree_check(tree):
             return False
 
 
-def model_acc(tree, model, data):
+def model_acc(tree, target, data):
     # get branching and class node and direct children of each node
     branching_nodes = nx.get_node_attributes(tree.DG_prime, 'branch on feature')
     class_nodes = nx.get_node_attributes(tree.DG_prime, 'class')
     acc = 0
-    results = {i: [None, data.at[i, model.target], []] for i in data.index}
+    results = {i: [None, data.at[i, target], []] for i in data.index}
     # for each datapoint
     #   start at root
     #   while unassigned to class
@@ -105,8 +105,8 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
         print('Invalid Tree!!')
     nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
     plt.savefig(fig_file)
-    test_acc, test_assignments = model_acc(tree=tree, model=opt_model, data=test_set)
-    train_acc, train_assignments = model_acc(tree=tree, model=opt_model, data=opt_model.data)
+    test_acc, test_assignments = model_acc(tree=tree, target=opt_model.target, data=test_set)
+    train_acc, train_assignments = model_acc(tree=tree, target=opt_model.target, data=opt_model.data)
 
     with open(results_file, mode='a') as results:
         results_writer = csv.writer(results, delimiter=',', quotechar='"')

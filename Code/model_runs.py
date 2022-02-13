@@ -12,6 +12,7 @@ from TREE import TREE
 from OBCT import OBCT
 import SPEED_UP as OSP
 import RESULTS as OR
+import UTILS as OU
 from FlowOCTTree import Tree as FlowOCTTree
 from FlowOCT import FlowOCT
 import FlowOCTutils
@@ -102,27 +103,30 @@ def main(argv):
                                 for num_features in range(1, 2 ** h):
                                     extras = [f'max_features-{num_features}']
                                     cal_tree = TREE(h=h)
-                                    opt_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype,
+                                    cal_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype,
                                                      time_limit=time_limit, encoding_map=encoding_map, warm_start=wsm,
                                                      model_extras=extras, unreachable=unreachable,  name=file)
-                                    opt_model.formulation()
-                                    opt_model.model.update()
-                                    opt_model.extras()
-                                    opt_model.optimization()
-                                    OR.node_assign(opt_model, cal_tree.DG_prime)
+                                    cal_model.formulation()
+                                    cal_model.model.update()
+                                    cal_model.extras()
+                                    cal_model.optimization()
+                                    OR.node_assign(cal_model, cal_tree.DG_prime)
                                     OR.tree_check(cal_tree)
-                                    cal_acc, cal_assign = OR.model_acc(tree=cal_tree, model=opt_model, data=cal_set)
+                                    cal_acc, cal_assign = OR.model_acc(tree=cal_tree, target=target, data=cal_set)
                                     wsm = {'tree': cal_tree.DG_prime.nodes(data=True), 'data': cal_assign}
                                     if cal_acc > best_acc:
                                         best_feats, best_acc = num_features, cal_acc
                                         best_tree = cal_tree
-                                    model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=best_tree, model=opt_model,
+                                    model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=best_tree, target=target,
                                                                                   data=model_set)
                                     WSV = {'tree': best_tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
                                 if any((match := elem).startswith('max_features') for elem in model_extras):
                                     model_extras[model_extras.index(match)] = 'max_features-'+str(best_feats)
                                 else:
                                     model_extras.append('max_features-'+str(best_feats))
+                            elif 'warm_start' in model_extras:
+                                cal_tree = TREE(h=h)
+                                WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
 
                         tree = TREE(h=h)
                         opt_model = OBCT(data=model_set, tree=tree, target=target, model=modeltype,
@@ -170,44 +174,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-def fixing(data_names, models, heights, file_out):
-    ''' Columns of the results file generated '''
-    summary_columns = ['Data', 'H', '|I|', '# Fixed', 'Total Vars', '% Fixed', 'Model']
-    output_path = os.getcwd() + '/results_data_files/'
-    if file_out is None:
-        output_name = str(data_names) + '_' + 'H' + ':' + str(heights) + '_' + str(models)
-    else:
-        output_name = str(file_out)
-    out_file = output_path + output_name
-    if not exists(out_file):
-        with open(out_file, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(summary_columns)
-            f.close()
-
-    rand_states = [138, 15, 89, 42, 0]
-    for name in data_names:
-        data, encoding_map = OU.get_data(name.replace('.csv', ''), 'target')
-        for h in heights:
-            for i in range(1):
-                train_set, test_set = train_test_split(data, train_size=0.5, random_state=rand_states[i])
-                calibration_set, test_set = train_test_split(test_set, train_size=0.5, random_state=rand_states[i])
-                model_set = pd.concat([train_set, calibration_set])
-                unreachable = OSP.fixing(TREE(h), model_set)
-                for model in models:
-                    print('\n\nDataset: ' + str(name) + ', H: ' + str(h) + ', Iteration: ' + str(
-                        i) + '. Run Start: ' + str(time.strftime("%I:%M %p", time.localtime())))
-                    tree = TREE(h=h)
-                    opt_model = OBCT(data=model_set, tree=tree, target='target', model=model,
-                                     time_limit=3600, encoding_map=encoding_map, model_extras=['fixing'],
-                                     unreachable=unreachable, warm_start=None, name=name)
-                    opt_model.formulation()
-                    with open(out_file, mode='a') as results:
-                        results_writer = csv.writer(results, delimiter=',', quotechar='"')
-                        results_writer.writerow(
-                            [name.replace('.csv', ''), h, len(data),
-                             opt_model.fixedvars, opt_model.totalvars, opt_model.fixed,
-                             model])
-                        results.close()

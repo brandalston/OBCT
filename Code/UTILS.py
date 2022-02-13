@@ -100,14 +100,16 @@ def encode(data, target, cont_bin_num=2):
     return new_data, encoding_map
 
 
-def random_tree(opt_model, data, tree, repeats=100, threshold=0):
+def random_tree(target, data, tree, repeats=100, threshold=0):
     # Generate best randomly assigned height 'h' tree for dataset 'data'
     # Threshold is (0,1) float for 'best features' to use in random trees
     # generate 'repeats' # of trees
     # return best acc tree and data assignments for warm start
 
     # select 'best features' and unique classes
-    selected_features = [feature for feature in opt_model.features
+    features = data.columns[data.columns != target]
+    classes = data[target].unique()
+    selected_features = [feature for feature in features
                          if data.loc[:, feature].sum() / len(data) >= threshold]
 
     # generate random trees and store best accuracy tree
@@ -115,9 +117,9 @@ def random_tree(opt_model, data, tree, repeats=100, threshold=0):
     level_acc, best_l_tree, level_data = -1, {}, {}
     for i in range(repeats):
         # randomly assign features to base tree
-        l_tree = level_tree(tree, selected_features, opt_model.classes, tree.node_level, tree.direct_ancestor)
+        l_tree = level_tree(tree, selected_features, classes, tree.node_level, tree.direct_ancestor)
         # generate acc results
-        acc, data_assignments = OR.model_acc(tree=l_tree, model=opt_model, data=data, )
+        acc, data_assignments = OR.model_acc(tree=l_tree, target=target, data=data)
         if acc > level_acc:
             level_acc = acc
             best_l_tree = l_tree.copy()
@@ -129,9 +131,9 @@ def random_tree(opt_model, data, tree, repeats=100, threshold=0):
     path_acc, best_p_tree, path_data = -1, {}, {}
     for i in range(repeats):
         # randomly assign features to base tree
-        p_tree = path_tree(tree, selected_features, opt_model.classes, tree.path, tree.child)
+        p_tree = path_tree(tree, selected_features, classes, tree.path, tree.child)
         # generate acc results
-        acc, data_assignments = OR.model_acc(tree=p_tree, model=opt_model, data=data, )
+        acc, data_assignments = OR.model_acc(tree=p_tree, target=target, data=data)
         if acc > path_acc:
             path_acc = acc
             best_p_tree = p_tree.copy()

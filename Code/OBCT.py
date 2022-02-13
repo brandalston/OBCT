@@ -456,7 +456,7 @@ class OBCT:
     ###########################################
     def extras(self):
         # conflict constraints: datapoint cannot select child of branching node based on feature value
-        if 'conflict constraints' in self.modelextras:
+        if 'conflict_constraints' in self.modelextras:
             if 'AGHA' not in self.modeltype:
                 self.cc = True
                 print('Adding conflict constraints')
@@ -469,6 +469,7 @@ class OBCT:
                         if v == 0: continue
                         for f in self.features:
                             if self.data.at[i, f] == (v % 2): conflict_constraints[i, v, f].lazy = 3
+
         # fixing DV of unreachable nodes
         if 'fixing' in self.modelextras:
             if 'AGHA' not in self.modeltype:
@@ -496,11 +497,13 @@ class OBCT:
                         self.P[v].ub = 0
                         for f in self.features: self.B[v, f].ub = 0
                     print('Pruned nodes ' + str(list(self.unreachable['tree'].keys())))
+
         # feature used once
-        if 'single use' in self.modelextras:
+        if 'single_use' in self.modelextras:
             self.single_use = True
             print('Each feature used at most once')
             self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.B + self.tree.L) <= 1 for f in self.features)
+
         # symmetry across root
         if any((match := elem).startswith('level_tree') for elem in self.modelextras):
             self.level_tree = match[-1]
@@ -510,14 +513,16 @@ class OBCT:
                                       quicksum(self.W[u, k] for k in self.classes) <= 1
                                       for u in self.tree.B + self.tree.L
                                       if abs(self.tree.depth[v] - self.tree.depth[u]) > int(match[-1]))
+
         # number of total branching nodes
         if any((match := elem).startswith('max_features') for elem in self.modelextras):
             self.max_features = int(re.sub("[^0-9]", "", match))
             print('No more than ' + str(self.max_features) + ' feature(s) used')
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
+
         # limit same super feature occurrences in parent, child branching nodes
-        if 'super feature' in self.modelextras:
+        if 'super_feature' in self.modelextras:
             self.super_feature = True
             print('Parent, child branching nodes cannot have same super feature')
             for super_feature in self.encoding_map.keys():

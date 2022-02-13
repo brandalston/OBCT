@@ -106,10 +106,10 @@ def conflict(model, where):
         q_val = {key: item for key, item in model.cbGetSolution(model._Q).items() if item > .5}
         branch = {key: item for key, item in model.cbGetSolution(model._B).items() if item > .5}
         start = time.perf_counter()
-        for (i, n) in q_val.keys():
-            for (v, f) in branch.keys():
-                if model.data.at[i, f] == (n % 2) and n in model.successor[v]:
-                    model.cbLazy(model._Q[i, n] + model._B[v, f] <= 1)
+        for (i, v) in q_val.keys():
+            for (n, f) in branch.keys():
+                if model.data.at[i, f] == (v % 2) and v in model.successor[n]:
+                    model.cbLazy(model._Q[i, v] + model._B[n, f] <= 1)
                     model._numcuts += 1
         model._cbtime += (time.perf_counter() - start)
         # print(f'Callback MIPSOL {model._numcb}: {model._numcuts} conflict lazy constraints')
