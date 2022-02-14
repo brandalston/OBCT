@@ -31,6 +31,7 @@ This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](htt
     - t : float, gurobi model time limit in s
     - m : str list, models to use
     - e : str list, model extras, if applicable
+    - c : str, tuning parameter
     - r : int, number of repeat trees to generate for each model
     - f : str, results output file .csv
 
@@ -44,13 +45,14 @@ models = ['MCF1','MCF2', 'CUT1','CUT2']
 time_limit = 3600
 extras = ['fixing','max_features-15']
 repeats = 5
+tuning = None
 file = 'results.csv'
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",repeats,"-f",file])
+model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",repeats,"-c", tuning,"-f",file])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -f 'results.csv'
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -c tuning -f 'results.csv'
 ```
 Note:
 - We assume the target column is labeled `'target'`
@@ -93,18 +95,21 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
 - Conflict contraints
   - `'conflict_constraints'`
 - Each future used once in DT
-  - `'single use'`
+  - `'single_use'`
 - Super feature relationship in parent, child branching vertices
   - `'super_feature'`
+***
+### Tuning functionality
+- The `tuning` parameter is meant for 
+- ex.`-c 'calibration'`, `-c 'warm_start'`
+- `calibration`
 - Calibration which uses the second objective function as a constraint and generates the pareto frontier
-  - `'calibration'`
   - First generate a 25% calibration training set for finding calibrated `max_features_k*` parameter
   - Each `max_features_k-1` DT is used as a warm for the `max_features_k` DT
   - The best in-sample-accuracy `max_features_k*` is used as the calibrated decision tree
     - Note: `max_features_k*` replaces any user specified `max_features`
-- Warm start models using randomly assigned tree 
-  - `'warm start'`
-- Note: `'calibration'` and `'warm start'` cannot both be used in `model_extras`
+- `warm_start`
+  - Warm start models using randomly assigned tree
 
 ***
 ***
