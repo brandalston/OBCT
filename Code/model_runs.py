@@ -7,12 +7,11 @@ import sys
 import csv
 from os.path import exists
 from sklearn.model_selection import train_test_split
-import UTILS as OU
-from TREE import TREE
 from OBCT import OBCT
+from TREE import TREE
+import UTILS as OU
 import SPEED_UP as OSP
 import RESULTS as OR
-import UTILS as OU
 from FlowOCTTree import Tree as FlowOCTTree
 from FlowOCT import FlowOCT
 import FlowOCTutils
@@ -27,13 +26,13 @@ def main(argv):
     model_extras = None
     repeats = None
     file_out = None
-
+    tuning = None
     rand_states = [138, 15, 89, 42, 0]
 
     try:
-        opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:",
+        opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:c:",
                                    ["data_files=", "heights=", "timelimit=",
-                                    "models=", "extras=", "repeats=", "results_file="])
+                                    "models=", "extras=", "repeats=", "results_file=", "tuning="])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -51,6 +50,8 @@ def main(argv):
             repeats = arg
         elif opt in ("-f", "--results_file"):
             file_out = arg
+        elif opt in ("-c", "--tuning"):
+            tuning = arg
 
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjVal',
@@ -58,11 +59,12 @@ def main(argv):
                        'Model', 'Time Limit', 'Rand. State',
                        '% Fixed', 'Calibration', 'CC',
                        'Single Feature Use', 'Level Tree', 'Max Features', 'Super Feature']
-    output_path = os.getcwd() + '/results_data_files/'
-    fig_path = os.getcwd() + '/results_figures'
+    output_path = os.getcwd() + '/results_files/'
+    fig_path = os.getcwd() + '/results_figures/'
+
     if file_out is None:
-        output_name = str(data_files) + '_' + 'H' + ':' + str(heights) + '_' + str(modeltypes) + \
-                  '_' + 'T:' + str(time_limit) + '_' + str(model_extras) + '.csv'
+        output_name = str(data_files) + '_H:' + str(heights) + '_' + str(modeltypes) + \
+                      '_T:' + str(time_limit) + '_' + str(model_extras) + '.csv'
     else:
         output_name = str(file_out)
     out_file = output_path + output_name
@@ -96,38 +98,41 @@ def main(argv):
                         unreachable = OSP.fixing(TREE(h), model_set)
                 for modeltype in modeltypes:
                     if 'OCT' not in modeltype:
-                        if model_extras is not None:
-                            if 'calibration' in model_extras:
-                                best_tree, best_feats, best_acc = {}, 0, 0
-                                wsm = None
-                                for num_features in range(1, 2 ** h):
-                                    extras = [f'max_features-{num_features}']
-                                    cal_tree = TREE(h=h)
-                                    cal_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype,
-                                                     time_limit=time_limit, encoding_map=encoding_map, warm_start=wsm,
-                                                     model_extras=extras, unreachable=unreachable,  name=file)
-                                    cal_model.formulation()
-                                    cal_model.model.update()
-                                    cal_model.extras()
-                                    cal_model.optimization()
-                                    OR.node_assign(cal_model, cal_tree.DG_prime)
-                                    OR.tree_check(cal_tree)
-                                    cal_acc, cal_assign = OR.model_acc(tree=cal_tree, target=target, data=cal_set)
-                                    wsm = {'tree': cal_tree.DG_prime.nodes(data=True), 'data': cal_assign}
-                                    if cal_acc > best_acc:
-                                        best_feats, best_acc = num_features, cal_acc
-                                        best_tree = cal_tree
-                                    model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=best_tree, target=target,
-                                                                                  data=model_set)
-                                    WSV = {'tree': best_tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
-                                if any((match := elem).startswith('max_features') for elem in model_extras):
-                                    model_extras[model_extras.index(match)] = 'max_features-'+str(best_feats)
-                                else:
-                                    model_extras.append('max_features-'+str(best_feats))
-                            elif 'warm_start' in model_extras:
+                        if 'calibration' == tuning:
+                            print('calibrating')
+                            best_tree, best_feats, best_acc = {}, 0, 0
+                            wsm = None
+                            for num_features in range(1, 2 ** h):
+                                extras = [f'max_features-{num_features}']
                                 cal_tree = TREE(h=h)
-                                WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
+                                cal_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype,
+                                                 time_limit=time_limit, encoding_map=encoding_map, warm_start=wsm,
+                                                 model_extras=extras, unreachable=unreachable,  name=file)
+                                cal_model.formulation()
+                                cal_model.model.update()
+                                cal_model.extras()
+                                cal_model.optimization()
 
+                                OR.node_assign(cal_model, cal_tree)
+                                OR.tree_check(cal_tree)
+                                cal_acc, cal_assign = OR.model_acc(tree=cal_tree, target=target, data=cal_set)
+                                wsm = {'tree': cal_tree.DG_prime.nodes(data=True), 'data': cal_assign}
+                                if cal_acc > best_acc:
+                                    best_feats, best_acc = num_features, cal_acc
+                                    best_tree = cal_tree
+                                model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=best_tree, target=target,
+                                                                              data=model_set)
+                                WSV = {'tree': best_tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
+                            if model_extras is not None:
+                                if any((match := elem).startswith('max_features') for elem in model_extras):
+                                    model_extras[model_extras.index(match)] = 'max_features-' + str(best_feats)
+                                else: model_extras.append('max_features-'+str(best_feats))
+                            else: model_extras = ['max_features-'+str(best_feats)]
+
+                        elif 'warm_start':
+                            print('Generating warm start values')
+                            cal_tree = TREE(h=h)
+                            WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
                         tree = TREE(h=h)
                         opt_model = OBCT(data=model_set, tree=tree, target=target, model=modeltype,
                                          time_limit=time_limit, encoding_map=encoding_map, model_extras=model_extras,
@@ -140,7 +145,8 @@ def main(argv):
                         # lp_name = output_path+'_'+str(file)+'_'+str(h)+'_'\
                         #          +str(modeltype)+'_'+'T:'+str(time_limit)+'_'+str(model_extras)
                         # opt_model.model.write(lp_name + '.lp')
-                        fig_file = fig_path + str(file) + str(h) + str(modeltype) + str(time_limit) + '.png'
+                        fig_file = fig_path + str(file) + '_H:' + str(h) + '_' + str(modeltype) + '_T:' + str(
+                            time_limit) + '_' + str(model_extras) + '.png'
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                                          rand_state=rand_states[i], results_file=out_file, fig_file=fig_file)
                     else:

@@ -117,12 +117,12 @@ def random_tree(target, data, tree, repeats=100, threshold=0):
     level_acc, best_l_tree, level_data = -1, {}, {}
     for i in range(repeats):
         # randomly assign features to base tree
-        l_tree = level_tree(tree, selected_features, classes, tree.node_level, tree.direct_ancestor)
+        l_tree = level_tree(tree, selected_features, classes)
         # generate acc results
         acc, data_assignments = OR.model_acc(tree=l_tree, target=target, data=data)
         if acc > level_acc:
             level_acc = acc
-            best_l_tree = l_tree.copy()
+            best_l_tree = l_tree
             level_data = data_assignments
     level_time = time.perf_counter()-level_start
     # print(f'Level Time: {round(level_time, 4)}s. Acc: {level_acc}')
@@ -136,33 +136,33 @@ def random_tree(target, data, tree, repeats=100, threshold=0):
         acc, data_assignments = OR.model_acc(tree=p_tree, target=target, data=data)
         if acc > path_acc:
             path_acc = acc
-            best_p_tree = p_tree.copy()
+            best_p_tree = p_tree
             path_data = data_assignments
     path_time = time.perf_counter()-path_start
     # print(f'Path Time: {round(path_time, 4)}s. Acc: {path_acc}')
 
     # store and return best tree assignment and data results in dictionary for warm start
     if level_acc > path_acc:
-        WSV = {'tree': best_l_tree, 'data': level_data, 'acc': level_acc, 'time': level_time}
+        WSV = {'tree': best_l_tree.DG_prime.nodes(data=True), 'data': level_data, 'acc': level_acc, 'time': level_time}
     else:
-        WSV = {'tree': best_p_tree, 'data': path_data, 'acc': path_acc, 'time': path_time}
+        WSV = {'tree': best_p_tree.DG_prime.nodes(data=True), 'data': path_data, 'acc': path_acc, 'time': path_time}
     return WSV
 
 
-def level_tree(base_tree, feature_list, classes, node_levels, ancestors):
+def level_tree(base_tree, feature_list, classes):
     # clear any existing node assignments
-    for n in base_tree.nodes():
-        if 'class' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['class']
-        if 'branch on feature' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['branch on feature']
-        if 'pruned' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['pruned']
-    node_assignments = {n: None for n in base_tree.nodes}
+    for n in base_tree.DG_prime.nodes():
+        if 'class' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['class']
+        if 'branch on feature' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['branch on feature']
+        if 'pruned' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['pruned']
+    node_assignments = {n: None for n in base_tree.DG_prime.nodes}
 
-    max_level = max(node_levels.keys())
+    max_level = max(base_tree.node_level.keys())
     # branch on root node
-    base_tree.nodes[0]['branch on feature'] = random.choice(feature_list)
+    base_tree.DG_prime.nodes[0]['branch on feature'] = random.choice(feature_list)
     node_assignments[0] = 'branch on feature'
 
     # For each level in tree
@@ -170,17 +170,18 @@ def level_tree(base_tree, feature_list, classes, node_levels, ancestors):
     #       If ancestor is branching feature randomly assign random class or feature
     #       If node is leaf node and ancestor is branching feature assign random class
     #       If ancestor is class or pruned assign pruned
-    for level in node_levels.keys():
-        for node in node_levels[level]:
-            if node_assignments[ancestors[node]] == 'branch on feature':
+    for level in base_tree.node_level:
+        if level == 0: continue
+        for node in base_tree.node_level[level]:
+            if node_assignments[base_tree.direct_ancestor[node]] == 'branch on feature':
                 if random.random() > .5 and level != max_level:
-                    base_tree.nodes[node]['branch on feature'] = random.choice(feature_list)
+                    base_tree.DG_prime.nodes[node]['branch on feature'] = random.choice(feature_list)
                     node_assignments[node] = 'branch on feature'
                 else:
-                    base_tree.nodes[node]['class'] = random.choice(classes)
+                    base_tree.DG_prime.nodes[node]['class'] = random.choice(classes)
                     node_assignments[node] = 'class'
             else:
-                base_tree.nodes[node]['pruned'] = 0
+                base_tree.DG_prime.nodes[node]['pruned'] = 0
                 node_assignments[node] = 'pruned'
 
     return base_tree
@@ -188,34 +189,34 @@ def level_tree(base_tree, feature_list, classes, node_levels, ancestors):
 
 def path_tree(base_tree, feature_list, classes, path, child):
     # clear any existing node assignments
-    for n in base_tree.nodes():
-        if 'class' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['class']
-        if 'branch on feature' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['branch on feature']
-        if 'pruned' in base_tree.nodes[n]:
-            del base_tree.nodes[n]['pruned']
-    node_assignments = {n: None for n in base_tree.nodes}
-    node_list = list(base_tree.nodes())
+    for n in base_tree.DG_prime.nodes():
+        if 'class' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['class']
+        if 'branch on feature' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['branch on feature']
+        if 'pruned' in base_tree.DG_prime.nodes[n]:
+            del base_tree.DG_prime.nodes[n]['pruned']
+    node_assignments = {n: None for n in base_tree.DG_prime.nodes}
+    node_list = list(base_tree.DG_prime.nodes())
 
     # branch on root node
-    base_tree.nodes[0]['branch on feature'] = random.choice(feature_list)
+    base_tree.DG_prime.nodes[0]['branch on feature'] = random.choice(feature_list)
     node_assignments[0] = 'branch on feature'
     node_list.remove(0)
 
     while len(node_list) > 0:
         selected = random.choice(node_list)
-        base_tree.nodes[selected]['class'] = random.choice(classes)
+        base_tree.DG_prime.nodes[selected]['class'] = random.choice(classes)
         node_assignments[selected] = 'class'
-        for v in reversed(path[selected][1:-1]):
+        for v in reversed(base_tree.path[selected][1:-1]):
             if node_assignments[v] is None:
-                base_tree.nodes[v]['branch on feature'] = random.choice(feature_list)
+                base_tree.DG_prime.nodes[v]['branch on feature'] = random.choice(feature_list)
                 node_assignments[v] = 'branch on feature'
                 node_list.remove(v)
             else: break
-        for c in child[selected]:
+        for c in base_tree.child[selected]:
             if node_assignments[c] is None:
-                base_tree.nodes[c]['pruned'] = 0
+                base_tree.DG_prime.nodes[c]['pruned'] = 0
                 node_assignments[c] = 'pruned'
                 node_list.remove(c)
             else: break
