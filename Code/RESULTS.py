@@ -113,7 +113,8 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
         results_writer.writerow(
             [opt_model.dataname, tree.height, len(opt_model.datapoints),
              test_acc / len(test_set), train_acc / len(opt_model.datapoints), opt_model.model.Runtime,
-             opt_model.model.MIPGap, opt_model.model.ObjBound, opt_model.model.ObjVal,
+             (opt_model.model.ObjBound - opt_model.model.ObjVal)/opt_model.model.ObjBound,
+             opt_model.model.ObjBound, opt_model.model.ObjVal,
              opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
              opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
              opt_model.modeltype, opt_model.time_limit, rand_state,
