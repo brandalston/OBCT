@@ -56,7 +56,7 @@ def main(argv):
             tuning = arg
 
     ''' Columns of the results file generated '''
-    summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjVal',
+    summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjBound', 'ObjVal',
                        '# CB', 'User Cuts', 'Cuts/CB', 'CB-Time', 'INT-CB-time', 'FRAC-CB-TIME', 'CB-Eps',
                        'Model', 'Time Limit', 'Rand. State',
                        '% Fixed', 'Calibration', 'CC',
@@ -172,13 +172,13 @@ def main(argv):
                                 results_writer = csv.writer(results, delimiter=',', quotechar='"')
                                 results_writer.writerow(
                                     [file.replace('.csv', ''), h, len(model_set),
-                                     test_acc, train_acc, primal.model.Runtime, primal.model.MIPGap,
-                                     len({i for i in model_set.index if primal.z[i, 1].x > .5}),
+                                     test_acc, train_acc, primal.model.Runtime,
+                                     primal.model.MIPGap, primal.model.ObjBound, primal.model.ObjVal,
                                      0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
                         elif 'Benders' in modeltype:
-
+                            print('Model: BendersOCT')
                             master = BendersOCT(data=model_set, label=target, tree=OCT_tree, _lambda=0, time_limit=time_limit, mode='classification')
                             master.create_master_problem()
                             master.model.update()
@@ -186,7 +186,22 @@ def main(argv):
                             b_value = master.model.getAttr("X", master.b)
                             beta_value = master.model.getAttr("X", master.beta)
                             p_value = master.model.getAttr("X", master.p)
-
+                            train_acc = FlowOCTutils.get_acc(master, train_set, b_value, beta_value, p_value)
+                            test_acc = FlowOCTutils.get_acc(master, test_set, b_value, beta_value, p_value)
+                            if master.model.RunTime < time_limit:
+                                print('Optimal solution found in ' + str(round(master.model.Runtime, 2)) + 's. (' + str(
+                                    time.strftime("%I:%M %p", time.localtime())) + ')\n')
+                            else:
+                                print('Time limit reached. (', time.strftime("%I:%M %p", time.localtime()), ')\n')
+                            with open(out_file, mode='a') as results:
+                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
+                                results_writer.writerow(
+                                    [file.replace('.csv', ''), h, len(model_set),
+                                     test_acc, train_acc, master.model.Runtime,
+                                     master.model.MIPGap, master.model.ObjBound, master.model.ObjVal,
+                                     0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
+                                     0, False, False, False, 'None', 'None', False])
+                                results.close()
 
 
 if __name__ == "__main__":

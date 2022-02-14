@@ -61,9 +61,9 @@ class FlowOCT:
         To compare all approaches in a fair setting we limit the solver to use only one thread to merely evaluate 
         the strength of the formulation.
         '''
-        self.model.params.Threads = 1
         self.model.params.TimeLimit = time_limit
         self.model.params.LogToConsole = 0
+        self.model.params.Threads = 1
 
         '''
         The following variables are used for the Benders problem to keep track of the times we call the callback.
@@ -176,7 +176,7 @@ class FlowOCT:
         # define objective function
         obj = LinExpr(0)
         for i in self.datapoints:
-            obj.add((1 - self._lambda) * (self.z[i, 1] - self.m[i]))
+            obj.add((1 - self._lambda) * (self.z[i, 1]))
 
         for n in self.tree.Nodes:
             for f in self.cat_features:

@@ -54,6 +54,8 @@ class BendersOCT:
 
         # Gurobi model
         self.model = Model('BendersOCT')
+        self.model.params.TimeLimit = time_limit
+        self.model.params.LogToConsole = 0
         # The cuts we add in the callback function would be treated as lazy constraints
         self.model.params.LazyConstraints = 1
         '''
@@ -61,8 +63,6 @@ class BendersOCT:
         the strength of the formulation.
         '''
         self.model.params.Threads = 1
-        self.model.params.TimeLimit = time_limit
-        self.model.params.LogToConsole = 0
         '''
         The following variables are used for the Benders problem to keep track of the times we call the callback.
         
@@ -155,7 +155,7 @@ class BendersOCT:
         # define objective function
         obj = LinExpr(0)
         for i in self.datapoints:
-            obj.add((1 - self._lambda) * (self.g[i] - self.m[i]))
+            obj.add((1 - self._lambda) * (self.g[i]))
 
         for n in self.tree.Nodes:
             for f in self.cat_features:
