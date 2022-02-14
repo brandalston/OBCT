@@ -6,24 +6,23 @@ import matplotlib.pyplot as plt
 
 
 def dv_results(model, tree, features, classes, datapoints):
-    for n in tree.DG_prime.nodes:
+    for v in tree.DG_prime.nodes:
         for f in features:
-            if model._B[n, f].x > .5:
-                print('node '+str(n)+' assigned feature '+str(f))
+            if model._B[v, f].x > .5:
+                print('vertex '+str(v)+' assigned feature '+str(f))
         for k in classes:
-            if model._W[n, k].x > 0.5:
-                print('node '+str(n)+' assigned class '+str(k))
-        if model._P[n].x < .5 and 1.0 not in [model._B[n, f].x for f in features]:
-            print('node '+str(n)+' pruned')
-
+            if model._W[v, k].x > 0.5:
+                print('vertex '+str(v)+' assigned class '+str(k))
+        if model._P[v].x < .5 and 1.0 not in [model._B[v, f].x for f in features]:
+            print('vertex '+str(v)+' pruned')
     # uncomment to print datapoint paths through tree
     '''
     for i in datapoints:
-        for n in tree.DG_prime.nodes:
-            if model._Q[i, n].x > 0.5:
-                print('datapoint '+str(i)+' use node '+str(n)+' in source-terminal path')
-            if model._S[i, n].x > 0.5:
-                print('datapoint '+str(i)+' terminal node '+str(n))
+        for v in tree.DG_prime.nodes:
+            if model._Q[i, v].x > 0.5:
+                print('datapoint '+str(i)+' use vertex '+str(v)+' in source-terminal path')
+            if model._S[i, v].x > 0.5:
+                print('datapoint '+str(i)+' terminal vertex '+str(v))
     '''
 
 
@@ -53,12 +52,12 @@ def tree_check(tree):
     # check for each class node v
     # all nodes n in ancestors of v are branching nodes
     # all children c of v are pruned
-    class_nodes = {n: tree.DG_prime.nodes[n]['class']
-                   for n in tree.DG_prime.nodes if 'class' in tree.DG_prime.nodes[n]}
-    branch_nodes = {n: tree.DG_prime.nodes[n]['branch on feature']
-                    for n in tree.DG_prime.nodes if 'branch on feature' in tree.DG_prime.nodes[n]}
-    pruned_nodes = {n: tree.DG_prime.nodes[n]['pruned']
-                    for n in tree.DG_prime.nodes if 'pruned' in tree.DG_prime.nodes[n]}
+    class_nodes = {v: tree.DG_prime.nodes[v]['class']
+                   for v in tree.DG_prime.nodes if 'class' in tree.DG_prime.nodes[v]}
+    branch_nodes = {v: tree.DG_prime.nodes[v]['branch on feature']
+                    for v in tree.DG_prime.nodes if 'branch on feature' in tree.DG_prime.nodes[v]}
+    pruned_nodes = {v: tree.DG_prime.nodes[v]['pruned']
+                    for v in tree.DG_prime.nodes if 'pruned' in tree.DG_prime.nodes[v]}
     for v in class_nodes.keys():
         if not (all(n in branch_nodes.keys() for n in tree.path[v][:-1])):
             return False
@@ -103,8 +102,9 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
     node_assign(opt_model, tree)
     if tree_check(tree=tree):
         print('Invalid Tree!!')
-    nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
-    plt.savefig(fig_file)
+    if fig_file is not None:
+        nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
+        plt.savefig(fig_file)
     test_acc, test_assignments = model_acc(tree=tree, target=opt_model.target, data=test_set)
     train_acc, train_assignments = model_acc(tree=tree, target=opt_model.target, data=opt_model.data)
 
@@ -117,7 +117,7 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
              opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
              opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
              opt_model.modeltype, opt_model.time_limit, rand_state,
-             opt_model.fixed, opt_model.warm_start, opt_model.cc,
+             opt_model.fixed, opt_model.warmstart, opt_model.cc,
              opt_model.single_use, opt_model.level_tree, opt_model.max_features, opt_model.super_feature])
         results.close()
 
@@ -144,7 +144,7 @@ def pareto_frontier(data, models):
 def pareto_plot(data_name, results_file):
     for name in data_name:
         pareto_data = pd.read_excel(results_file, sheet_name=name)
-        models = ['AGHA', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+        models = pareto_data['models'].unique()
         dominating_points = pareto_frontier(pareto_data, models)
         dominated_points = pareto_data.iloc[list(set(pareto_data.index).difference(set(dominating_points.index))), :]
         '''

@@ -15,6 +15,7 @@ import RESULTS as OR
 from FlowOCTTree import Tree as FlowOCTTree
 from FlowOCT import FlowOCT
 import FlowOCTutils
+from BendersOCT import BendersOCT
 
 
 def main(argv):
@@ -27,6 +28,7 @@ def main(argv):
     repeats = None
     file_out = None
     tuning = None
+
     rand_states = [138, 15, 89, 42, 0]
 
     try:
@@ -99,7 +101,7 @@ def main(argv):
                 for modeltype in modeltypes:
                     if 'OCT' not in modeltype:
                         if 'calibration' == tuning:
-                            print('calibrating')
+                            print('Calibrating number of maximum branching features')
                             best_tree, best_feats, best_acc = {}, 0, 0
                             wsm = None
                             for num_features in range(1, 2 ** h):
@@ -112,7 +114,6 @@ def main(argv):
                                 cal_model.model.update()
                                 cal_model.extras()
                                 cal_model.optimization()
-
                                 OR.node_assign(cal_model, cal_tree)
                                 OR.tree_check(cal_tree)
                                 cal_acc, cal_assign = OR.model_acc(tree=cal_tree, target=target, data=cal_set)
@@ -128,8 +129,7 @@ def main(argv):
                                     model_extras[model_extras.index(match)] = 'max_features-' + str(best_feats)
                                 else: model_extras.append('max_features-'+str(best_feats))
                             else: model_extras = ['max_features-'+str(best_feats)]
-
-                        elif 'warm_start':
+                        elif 'warm_start' == tuning:
                             print('Generating warm start values')
                             cal_tree = TREE(h=h)
                             WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
@@ -150,32 +150,43 @@ def main(argv):
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                                          rand_state=rand_states[i], results_file=out_file, fig_file=fig_file)
                     else:
-                        print('Model: FlowOCT')
                         OCT_tree = FlowOCTTree(d=h)
-                        primal = FlowOCT(data=model_set, label=target, tree=OCT_tree,
-                                         _lambda=0, time_limit=time_limit, mode='classification')
-                        primal.create_primal_problem()
-                        primal.model.update()
-                        primal.model.optimize()
-                        b_value = primal.model.getAttr("X", primal.b)
-                        beta_value = primal.model.getAttr("X", primal.beta)
-                        p_value = primal.model.getAttr("X", primal.p)
-                        train_acc = FlowOCTutils.get_acc(primal, train_set, b_value, beta_value, p_value)
-                        test_acc = FlowOCTutils.get_acc(primal, test_set, b_value, beta_value, p_value)
-                        if primal.model.RunTime < time_limit:
-                            print('Optimal solution found in ' + str(round(primal.model.Runtime, 2)) + 's. (' + str(
-                                time.strftime("%I:%M %p", time.localtime())) + ')\n')
-                        else:
-                            print('Time limit reached. (', time.strftime("%I:%M %p", time.localtime()), ')\n')
-                        with open(out_file, mode='a') as results:
-                            results_writer = csv.writer(results, delimiter=',', quotechar='"')
-                            results_writer.writerow(
-                                [file.replace('.csv', ''), h, len(model_set),
-                                 test_acc, train_acc, primal.model.Runtime, primal.model.MIPGap,
-                                 len({i for i in model_set.index if primal.z[i, 1].x > .5}),
-                                 0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
-                                 0, False, False, False, 'None', 'None', False])
-                            results.close()
+                        if 'Flow' in modeltype:
+                            print('Model: FlowOCT')
+                            primal = FlowOCT(data=model_set, label=target, tree=OCT_tree,
+                                             _lambda=0, time_limit=time_limit, mode='classification')
+                            primal.create_primal_problem()
+                            primal.model.update()
+                            primal.model.optimize()
+                            b_value = primal.model.getAttr("X", primal.b)
+                            beta_value = primal.model.getAttr("X", primal.beta)
+                            p_value = primal.model.getAttr("X", primal.p)
+                            train_acc = FlowOCTutils.get_acc(primal, train_set, b_value, beta_value, p_value)
+                            test_acc = FlowOCTutils.get_acc(primal, test_set, b_value, beta_value, p_value)
+                            if primal.model.RunTime < time_limit:
+                                print('Optimal solution found in ' + str(round(primal.model.Runtime, 2)) + 's. (' + str(
+                                    time.strftime("%I:%M %p", time.localtime())) + ')\n')
+                            else:
+                                print('Time limit reached. (', time.strftime("%I:%M %p", time.localtime()), ')\n')
+                            with open(out_file, mode='a') as results:
+                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
+                                results_writer.writerow(
+                                    [file.replace('.csv', ''), h, len(model_set),
+                                     test_acc, train_acc, primal.model.Runtime, primal.model.MIPGap,
+                                     len({i for i in model_set.index if primal.z[i, 1].x > .5}),
+                                     0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
+                                     0, False, False, False, 'None', 'None', False])
+                                results.close()
+                        elif 'Benders' in modeltype:
+
+                            master = BendersOCT(data=model_set, label=target, tree=OCT_tree, _lambda=0, time_limit=time_limit, mode='classification')
+                            master.create_master_problem()
+                            master.model.update()
+                            master.model.optimize(FlowOCTutils.mycallback)
+                            b_value = master.model.getAttr("X", master.b)
+                            beta_value = master.model.getAttr("X", master.beta)
+                            p_value = master.model.getAttr("X", master.p)
+
 
 
 if __name__ == "__main__":

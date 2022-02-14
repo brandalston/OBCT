@@ -62,7 +62,7 @@ class BendersOCT:
         '''
         self.model.params.Threads = 1
         self.model.params.TimeLimit = time_limit
-
+        self.model.params.LogToConsole = 0
         '''
         The following variables are used for the Benders problem to keep track of the times we call the callback.
         

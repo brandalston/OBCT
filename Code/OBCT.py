@@ -17,8 +17,12 @@ class OBCT:
         self.time_limit = time_limit
         self.encoding_map = encoding_map
         self.unreachable = unreachable
-        self.warm_start = warm_start
-
+        if warm_start is not None:
+            self.warmstart = True
+            self.wsv = warm_start
+        else:
+            self.warmstart = False
+            self.wsv = None
         print('Model: '+str(self.modeltype))
         # Binary Encoded Feature Set and Class Set
         self.features = self.data.columns[self.data.columns != self.target]
@@ -441,7 +445,7 @@ class OBCT:
                                               for i in self.datapoints)
 
         # Warm Start
-        if self.warm_start is not None: SPEED_UP.warm_start(self, self.warm_start)
+        if self.wsv is not None: SPEED_UP.warm_start(self, self.wsv)
 
         # pass to model DV for callback purposes
         self.model._Q = self.Q
@@ -514,12 +518,19 @@ class OBCT:
                                       for u in self.tree.B + self.tree.L
                                       if abs(self.tree.depth[v] - self.tree.depth[u]) > int(match[-1]))
 
-        # number of total branching nodes
+        # number of maximum branching nodes
         if any((match := elem).startswith('max_features') for elem in self.modelextras):
             self.max_features = int(re.sub("[^0-9]", "", match))
             print('No more than ' + str(self.max_features) + ' feature(s) used')
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
+
+        # number of branching nodes
+        if any((match := elem).startswith('num_features') for elem in self.modelextras):
+            self.max_features = int(re.sub("[^0-9]", "", match))
+            print(str(self.max_features)+' feature(s) used')
+            self.model.addConstr(
+                quicksum(self.B[v, f] for f in self.features for v in self.tree.B) == self.max_features)
 
         # limit same super feature occurrences in parent, child branching nodes
         if 'super_feature' in self.modelextras:
