@@ -10,7 +10,6 @@ from sklearn.model_selection import train_test_split
 from OBCT import OBCT
 from TREE import TREE
 import UTILS as OU
-import SPEED_UP as OSP
 import RESULTS as OR
 
 
@@ -99,4 +98,3 @@ def main(argv):
             pass
         print(frontier_data)
         OR.pareto_frontier(frontier_data)
-
