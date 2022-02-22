@@ -56,7 +56,7 @@ def main(argv):
             tuning = arg
 
     ''' Columns of the results file generated '''
-    summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjBound', 'ObjVal',
+    summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjVal',
                        '# CB', 'User Cuts', 'Cuts/CB', 'CB-Time', 'INT-CB-time', 'FRAC-CB-TIME', 'CB-Eps',
                        'Model', 'Time Limit', 'Rand. State',
                        '% Fixed', 'Calibration', 'CC',
@@ -173,13 +173,14 @@ def main(argv):
                                 results_writer.writerow(
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, primal.model.Runtime,
-                                     primal.model.MIPGap, primal.model.ObjBound, primal.model.ObjVal,
+                                     primal.model.MIPGap, primal.model.ObjVal,
                                      0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
                         elif 'Benders' in modeltype:
                             print('Model: BendersOCT')
-                            master = BendersOCT(data=model_set, label=target, tree=OCT_tree, _lambda=0, time_limit=time_limit, mode='classification')
+                            master = BendersOCT(data=model_set, label=target, tree=OCT_tree,
+                                                _lambda=0, time_limit=time_limit, mode='classification')
                             master.create_master_problem()
                             master.model.update()
                             master.model.optimize(FlowOCTutils.mycallback)
@@ -198,7 +199,7 @@ def main(argv):
                                 results_writer.writerow(
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, master.model.Runtime,
-                                     master.model.MIPGap, master.model.ObjBound, master.model.ObjVal,
+                                     master.model.MIPGap, master.model.ObjVal,
                                      0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()

@@ -92,3 +92,5 @@ def main(argv):
                         model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=tree, target=target,
                                                                       data=train_set)
                         WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
+        pareto_data = pd.read_csv(out_file, na_values='?')
+        OR.pareto_frontier(pareto_data, modeltypes)

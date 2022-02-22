@@ -113,8 +113,7 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
         results_writer.writerow(
             [opt_model.dataname, tree.height, len(opt_model.datapoints),
              test_acc / len(test_set), train_acc / len(opt_model.datapoints), opt_model.model.Runtime,
-             (opt_model.model.ObjBound - opt_model.model.ObjVal)/opt_model.model.ObjBound,
-             opt_model.model.ObjBound, opt_model.model.ObjVal,
+             opt_model.model.MIPGap, opt_model.model.ObjVal,
              opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
              opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
              opt_model.modeltype, opt_model.time_limit, rand_state,
@@ -126,19 +125,43 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
 def pareto_frontier(data, models):
     dom_points = {}
     ticker = 0
+    # data.index = list(range(len(data)))
+    data.reset_index(drop=True, inplace=True)
+
+    print(data)
     for model in models:
         sub_data = data.loc[data['Model'] == model]
-        # print(f'\n\nPareto Frontier for model {model}')
+        print(f'\n\nPareto Frontier for model {model}')
         best_acc, max_features = -1, 0
         for i in sub_data.index:
             if (sub_data.at[i, 'Out-Acc']) > best_acc and (sub_data.at[i, 'Max Features'] > max_features):
                 dom_points[ticker+i] = [sub_data.at[i, 'Max Features'], sub_data.at[i, 'Out-Acc'], model]
-                # print(f'new dominating point: {sub_data.iloc[i, 4], sub_data.iloc[i, 2]}')
                 best_acc, max_features = sub_data.at[i, 'Out-Acc'], sub_data.at[i, 'Max Features']
         ticker += 31
 
-    dominating_points = pd.DataFrame.from_dict(dom_points, orient='index',
-                                               columns=['Max Branching Nodes', 'Out-Acc', 'Model'])
+    dominating_points = pd.DataFrame.from_dict(dom_points, orient='index', columns=['Max Features', 'Out-Acc', 'Model'])
+    domed_pts = list(set(data.index).difference(set(dominating_points.index)))
+    dominated_points = data.iloc[domed_pts, :]
+    print(dominated_points)
+    print(dominating_points)
+    fig = plt.figure()
+    axs = fig.add_subplot(111)
+    ticker = 0
+    colors = ['b', 'g', 'r', 'k']
+    markers = ['s', 'p', 'P', '*']
+    for model in models:
+        axs.scatter(dominating_points.loc[data['Model'] == model]['Max Features'],
+                    dominating_points.loc[data['Model'] == model]['Out-Acc'],
+                    marker=markers[ticker], label=model, color=colors[ticker])
+        z = np.polyfit(data.loc[data['Model'] == model]['Max Features'],
+                       data.loc[data['Model'] == model]['Out-Acc'], 5)
+        p = np.poly1d(z)
+        axs.plot(data.loc[data['Model'] == model]['Max Features'],
+                 p(data.loc[data['Model'] == model]['Max Features']),
+                 color=colors[ticker], alpha=0.5)
+        axs.scatter(dominated_points.loc[dominated_points['Model'] == model]['Max Features'],
+                    dominated_points.loc[dominated_points['Model'] == model]['Out-Acc'],
+                    marker=markers[ticker], color=colors[ticker], alpha=0.05)
     return dominating_points
 
 

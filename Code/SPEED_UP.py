@@ -81,23 +81,14 @@ def warm_start(opt_model, warm_start_values):
         for n in opt_model.tree.B + opt_model.tree.L:
             if n == warm_start_values['data'][i][2][-1] and 'correct' in warm_start_values['data'][i]:
                 opt_model.S[i, n].start = 1.0
-                if opt_model.modeltype == 'AGHA':
-                    opt_model.GEN[i].start = 1.0
-                    # model._Z[i, path[n][-2], n].start = 1.0
             elif n == warm_start_values['data'][i][2][-1]:
                 opt_model.S[i, n].start = 0.0
-                if opt_model.modeltype == 'AGHA':
-                    opt_model.GEN[i].start = 0.0
-                    opt_model.Z[i, opt_model.tree.path[n][-2], n].start = 0.0
             else:
                 opt_model.S[i, n].start = 0.0
-            if opt_model.modeltype == 'AGHA':
-                pass
+            if n in warm_start_values['data'][i][2]:
+                opt_model.Q[i, n].start = 1.0
             else:
-                if n in warm_start_values['data'][i][2]:
-                    opt_model.Q[i, n].start = 1.0
-                else:
-                    opt_model.Q[i, n].start = 0.0
+                opt_model.Q[i, n].start = 0.0
     return opt_model
 
 

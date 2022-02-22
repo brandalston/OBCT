@@ -445,7 +445,9 @@ class OBCT:
                                               for i in self.datapoints)
 
         # Warm Start
-        if self.wsv is not None: SPEED_UP.warm_start(self, self.wsv)
+        if ('OCT' or 'AGHA') not in self.modeltype and self.wsv is not None:
+            print('Warm starting model')
+            SPEED_UP.warm_start(self, self.wsv)
 
         # pass to model DV for callback purposes
         self.model._Q = self.Q
