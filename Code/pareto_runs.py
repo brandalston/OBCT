@@ -17,7 +17,7 @@ import RESULTS as OR
 def main(argv):
     print(argv)
     data_files = None
-    heights = None
+    height = None
     time_limit = None
     modeltypes = None
     repeats = None
@@ -25,7 +25,7 @@ def main(argv):
 
     try:
         opts, args = getopt.getopt(argv, "d:h:t:m:r:f:",
-                                   ["data_files=", "heights=", "timelimit=",
+                                   ["data_files=", "height=", "timelimit=",
                                     "models=", "repeats=", "results_file="])
     except getopt.GetoptError:
         sys.exit(2)
@@ -33,7 +33,7 @@ def main(argv):
         if opt in ("-d", "--data_files"):
             data_files = arg
         elif opt in ("-h", "--heights"):
-            heights = arg
+            height = arg
         elif opt in ("-t", "--timelimit"):
             time_limit = int(arg)
         elif opt in ("-m", "--models"):
@@ -51,7 +51,7 @@ def main(argv):
                        'Single Feature Use', 'Level Tree', 'Max Features', 'Super Feature']
     output_path = os.getcwd() + '/results_files/'
     if file_out is None:
-        output_name = str(data_files) + '_H:' + str(heights) + '_' + str(modeltypes) + \
+        output_name = str(data_files) + '_H:' + str(height) + '_' + str(modeltypes) + \
                       '_T:' + str(time_limit) + '_pareto.csv'
     else:
         output_name = str(file_out)
@@ -68,29 +68,35 @@ def main(argv):
     for file in data_files:
         # pull dataset to train model with
         data, encoding_map = OU.get_data(file.replace('.csv', ''), target)
-        for h in heights:
-            for i in range(repeats):
-                print('\n\nDataset: ' + str(file) + ', H: ' + str(h) + ', Iteration: ' + str(i) + '. Run Start: ' + str(
-                      time.strftime("%I:%M %p", time.localtime())))
-                train_set, test_set = train_test_split(data, train_size=0.5, random_state=rand_states[i])
-                for modeltype in modeltypes:
-                    WSV = None
-                    for num_features in range(1, 2 ** h):
-                        extras = [f'num_features-{num_features}']
-                        tree = TREE(h=h)
-                        opt_model = OBCT(data=train_set, tree=tree, target=target, model=modeltype,
-                                         time_limit=time_limit, encoding_map=encoding_map, model_extras=extras,
-                                         unreachable=None, warm_start=WSV, name=file)
-                        opt_model.formulation()
-                        opt_model.extras()
-                        opt_model.model.update()
-                        opt_model.optimization()
-                        OR.node_assign(opt_model, tree)
-                        OR.tree_check(tree)
-                        OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
-                                         rand_state=rand_states[i], results_file=out_file, fig_file=None)
-                        model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=tree, target=target,
-                                                                      data=train_set)
-                        WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
-        pareto_data = pd.read_csv(out_file, na_values='?')
-        OR.pareto_frontier(pareto_data, modeltypes)
+        for i in range(repeats):
+            print('\n\nDataset: ' + str(file) + ', H: ' + str(height) + ', Iteration: ' + str(i) + '. Run Start: ' + str(
+                  time.strftime("%I:%M %p", time.localtime())))
+            train_set, test_set = train_test_split(data, train_size=0.5, random_state=rand_states[i])
+            for modeltype in modeltypes:
+                WSV = None
+                for num_features in range(1, 2 ** height):
+                    extras = [f'num_features-{num_features}']
+                    tree = TREE(h=height)
+                    opt_model = OBCT(data=train_set, tree=tree, target=target, model=modeltype,
+                                     time_limit=time_limit, encoding_map=encoding_map, model_extras=extras,
+                                     unreachable=None, warm_start=WSV, name=file)
+                    opt_model.formulation()
+                    opt_model.extras()
+                    opt_model.model.update()
+                    opt_model.optimization()
+                    OR.node_assign(opt_model, tree)
+                    OR.tree_check(tree)
+                    OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
+                                     rand_state=rand_states[i], results_file=out_file, fig_file=None)
+                    model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=tree, target=target,
+                                                                  data=train_set)
+                    WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
+    pareto_data = pd.read_csv(out_file, na_values='?')
+    for file in data_files:
+        frontier_data = pareto_data.loc[pareto_data['Data'] == file.replace('.csv', '')]
+        frontier_avg = pd.DataFrame(columns=summary_columns)
+        for col in frontier_data.columns:
+            pass
+        print(frontier_data)
+        OR.pareto_frontier(frontier_data)
+
