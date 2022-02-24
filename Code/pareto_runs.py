@@ -55,11 +55,13 @@ def main(argv):
     else:
         output_name = str(file_out)
     out_file = output_path + output_name
-    if exists(out_file): os.remove(out_file)
-    with open(out_file, mode='a') as results:
-        results_writer = csv.writer(results, delimiter=',', quotechar='"')
-        results_writer.writerow(summary_columns)
-        results.close()
+
+    if file_out is None:
+        with open(out_file, mode='a') as results:
+            results_writer = csv.writer(results, delimiter=',', quotechar='"')
+            results_writer.writerow(summary_columns)
+            results.close()
+
     target = 'target'
     repeats = repeats
     rand_states = [138, 15, 89, 42, 0]
@@ -91,21 +93,27 @@ def main(argv):
                                                                   data=train_set)
                     WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
                     if 'AGHA' == modeltype or 'OCT' in modeltype: WSV = None
-
-        pareto_data = pd.read_csv(out_file, na_values='?')
+        pareto_data = pd.pareto_data = pd.read_csv('results_files/pareto.csv', na_values='?')
+        file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)
         for model in modeltypes:
-            sub_data = pareto_data.loc[pareto_data['Model'] == model]
+            sub_data = file_data.loc[file_data['Model'] == model]
             for feature in sub_data['Max Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max Features'] == feature]
                 frontier_avg = frontier_avg.append({
-                    'Data': file.replace('.csv', ''), 'H': int(subsub_data['H'].mean()), '|I|': int(subsub_data['|I|'].mean()),
-                    'Out-Acc': 100*subsub_data['Out-Acc'].mean(), 'In-Acc': 100*subsub_data['In-Acc'].mean(), 'Sol-Time': subsub_data['Sol-Time'].mean(),
-                    'Gap': 100*subsub_data['Gap'].mean(), 'ObjVal': subsub_data['ObjVal'].mean(),
-                    '# CB': subsub_data['# CB'].mean(), 'User Cuts': subsub_data['User Cuts'].mean(), 'Cuts/CB': subsub_data['Cuts/CB'].mean(),
-                    'CB-Time': subsub_data['CB-Time'].mean(), 'INT-CB-Time': subsub_data['INT-CB-Time'].mean(), 'FRAC-CB-Time': subsub_data['FRAC-CB-Time'].mean(),
-                    'CB-Eps': subsub_data['CB-Eps'].mean(), 'Model': model, 'Time Limit': time_limit, 'Rand State': 'None',
-                    '% Fixed': 0, 'Calibration': False, 'CC': False, 'Single Feature Use': False, 'Level Tree': False,
+                    'Data': file.replace('.csv', ''), 'H': int(subsub_data['H'].mean()),
+                    '|I|': int(subsub_data['|I|'].mean()),
+                    'Out-Acc': 100 * subsub_data['Out-Acc'].mean(), 'In-Acc': 100 * subsub_data['In-Acc'].mean(),
+                    'Sol-Time': subsub_data['Sol-Time'].mean(),
+                    'Gap': 100 * subsub_data['Gap'].mean(), 'ObjVal': subsub_data['ObjVal'].mean(),
+                    '# CB': subsub_data['# CB'].mean(), 'User Cuts': subsub_data['User Cuts'].mean(),
+                    'Cuts/CB': subsub_data['Cuts/CB'].mean(),
+                    'CB-Time': subsub_data['CB-Time'].mean(), 'INT-CB-Time': subsub_data['INT-CB-Time'].mean(),
+                    'FRAC-CB-Time': subsub_data['FRAC-CB-Time'].mean(),
+                    'CB-Eps': subsub_data['CB-Eps'].mean(), 'Model': model, 'Time Limit': time_limit,
+                    'Rand State': 'None',
+                    '% Fixed': 0, 'Calibration': False, 'CC': False, 'Single Feature Use': False,
+                    'Level Tree': False,
                     'Max Features': float(feature), 'Super Feature': False
                 }, ignore_index=True)
         OR.pareto_frontier(frontier_avg)

@@ -141,29 +141,25 @@ def pareto_frontier(data):
     fig = plt.figure()
     axs = fig.add_subplot(111)
     markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'AGHA': '*'}
-    cmap = plt.get_cmap('gist_rainbow')
-    colors = [cmap(i) for i in np.linspace(0, 1, len(data['Model'].unique()))]
+    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red', 'AGHA': 'k'}
 
-    i = 0
     for model in models:
-        selected_color = colors[i]
         axs.scatter(dominating_points.loc[data['Model'] == model]['Max Features'],
                     dominating_points.loc[data['Model'] == model]['Out-Acc'],
-                    marker=markers[model], color=selected_color, label=model)
+                    marker=markers[model], color=colors[model], label=model)
         if domed_pts: axs.scatter(dominated_points.loc[data['Model'] == model]['Max Features'],
                                   dominated_points.loc[data['Model'] == model]['Out-Acc'],
-                                  marker=markers[model], color=selected_color, alpha=0.1)
+                                  marker=markers[model], color=colors[model], alpha=0.1)
         z = np.polyfit(data.loc[data['Model'] == model]['Max Features'],
                        data.loc[data['Model'] == model]['Out-Acc'], 3)
         p = np.poly1d(z)
         axs.plot(data.loc[data['Model'] == model]['Max Features'],
                  p(data.loc[data['Model'] == model]['Max Features']),
-                 color=selected_color, alpha=0.5)
+                 color=colors[model], alpha=0.5)
         axs.legend(loc='lower right')
         axs.set_xlabel('Num. Branching Features')
-        axs.xaxis.set_ticks(np.arange(1, max(data['Max Features'].unique())+1, 3))
+        axs.xaxis.set_ticks(np.arange(1, max(data['Max Features'].unique())+1, 5))
         axs.set_ylabel('Out-Acc. (%)')
         axs.set_title(f'{str(name)} Pareto Frontier')
-        i += 1
     plt.savefig(os.getcwd() + '/results_figures/' + str(name) + ' H: '+ str(height)+' Pareto Frontier.png', dpi=300)
     plt.close()
