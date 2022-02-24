@@ -17,12 +17,7 @@ class OBCT:
         self.time_limit = time_limit
         self.encoding_map = encoding_map
         self.unreachable = unreachable
-        if warm_start is not None:
-            self.warmstart = True
-            self.wsv = warm_start
-        else:
-            self.warmstart = False
-            self.wsv = None
+
         print('Model: '+str(self.modeltype))
         # Binary Encoded Feature Set and Class Set
         self.features = self.data.columns[self.data.columns != self.target]
@@ -101,6 +96,12 @@ class OBCT:
         self.model._eps, self.model._epsval = self.eps, self.epsval
         self.model._modeltype, self.model._path, self.model._child = self.modeltype, self.tree.path, self.tree.child
         self.model._cutsequence = {'Dataset': self.dataname.replace('_enc', ''), 'Height': self.tree.height, 'Model': self.modeltype}
+
+        # Warm start (if applicable)
+        if warm_start is not None:
+            self.warmstart = True
+            self.wsv = warm_start
+        else: self.warmstart = False
 
     ###########################################
     # MIP FORMULATIONS
@@ -445,7 +446,7 @@ class OBCT:
                                               for i in self.datapoints)
 
         # Warm Start
-        if ('OCT' or 'AGHA') not in self.modeltype and self.wsv is not None:
+        if self.warmstart:
             print('Warm starting model')
             SPEED_UP.warm_start(self, self.wsv)
 

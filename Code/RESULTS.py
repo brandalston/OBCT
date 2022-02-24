@@ -1,10 +1,9 @@
 import networkx as nx
-import pandas as pd
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
-import itertools
 import os
+
 
 def dv_results(model, tree, features, classes, datapoints):
     for v in tree.DG_prime.nodes:
@@ -16,6 +15,7 @@ def dv_results(model, tree, features, classes, datapoints):
                 print('vertex '+str(v)+' assigned class '+str(k))
         if model._P[v].x < .5 and 1.0 not in [model._B[v, f].x for f in features]:
             print('vertex '+str(v)+' pruned')
+
     # uncomment to print datapoint paths through tree
     '''
     for i in datapoints:
@@ -124,9 +124,9 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
 
 
 def pareto_frontier(data):
-    data.reset_index(inplace=True)
     models = data['Model'].unique()
-    name = data['Data'].unique()
+    name = data['Data'].unique()[0]
+    height = data['H'].unique()[0]
     dom_points = []
     for model in models:
         sub_data = data.loc[data['Model'] == model]
@@ -138,36 +138,32 @@ def pareto_frontier(data):
     domed_pts = list(set(data.index).difference(set(dom_points)))
     dominating_points = data.iloc[dom_points, :]
     if domed_pts: dominated_points = data.iloc[domed_pts, :]
-
-    print(name, dom_points)
-    print(name, domed_pts)
-
     fig = plt.figure()
     axs = fig.add_subplot(111)
-    markers = itertools.cycle(('s', 'p', 'P', '*'))
+    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'AGHA': '*'}
     cmap = plt.get_cmap('gist_rainbow')
     colors = [cmap(i) for i in np.linspace(0, 1, len(data['Model'].unique()))]
+
     i = 0
     for model in models:
-        marker = next(markers)
         selected_color = colors[i]
         axs.scatter(dominating_points.loc[data['Model'] == model]['Max Features'],
                     dominating_points.loc[data['Model'] == model]['Out-Acc'],
-                    marker=marker, color=selected_color, label=model)
-        if domed_pts:
-            axs.scatter(dominated_points.loc[dominated_points['Model'] == model]['Max Features'],
-                        dominated_points.loc[dominated_points['Model'] == model]['Out-Acc'],
-                        marker=marker, color=selected_color, alpha=0.1)
+                    marker=markers[model], color=selected_color, label=model)
+        if domed_pts: axs.scatter(dominated_points.loc[data['Model'] == model]['Max Features'],
+                                  dominated_points.loc[data['Model'] == model]['Out-Acc'],
+                                  marker=markers[model], color=selected_color, alpha=0.1)
         z = np.polyfit(data.loc[data['Model'] == model]['Max Features'],
                        data.loc[data['Model'] == model]['Out-Acc'], 3)
         p = np.poly1d(z)
         axs.plot(data.loc[data['Model'] == model]['Max Features'],
                  p(data.loc[data['Model'] == model]['Max Features']),
                  color=selected_color, alpha=0.5)
-        axs.legend()
-        axs.set_xlabel('Max. Branching Features')
-        axs.xaxis.set_ticks(np.arange(1, max(data['Max Features'].unique())+1, 1.0))
+        axs.legend(loc='lower right')
+        axs.set_xlabel('Num. Branching Features')
+        axs.xaxis.set_ticks(np.arange(1, max(data['Max Features'].unique())+1, 3))
         axs.set_ylabel('Out-Acc. (%)')
         axs.set_title(f'{str(name)} Pareto Frontier')
         i += 1
-    plt.savefig(os.getcwd() + '/results_figures/' + str(name) + ' Pareto.png', dpi=300)
+    plt.savefig(os.getcwd() + '/results_figures/' + str(name) + ' H: '+ str(height)+' Pareto Frontier.png', dpi=300)
+    plt.close()
