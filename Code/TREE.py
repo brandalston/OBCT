@@ -5,8 +5,12 @@ import graphviz
 class TREE():
 
     def __init__(self, h):
+        '''
+        :param h: height of binary decision tree
+        Binary Height h Tree Information including P_v and CHILD_v for each vertex
+        Also pass initial information for plotting assigned tree
+        '''
         self.height = h
-        # Binary Height h Tree Information
         self.G = nx.generators.balanced_tree(r=2, h=h)
         self.DG = nx.DiGraph(self.G)  # bi-directed version of G
         hidden_edges = [(i, j) for (i, j) in self.DG.edges if i > j]

@@ -19,7 +19,7 @@ model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",e
 '''
 
 height = 5
-models = ['AGHA','MCF1','MCF2','CUT1','CUT2']
+models = ['AGHA','MCF1','MCF2','CUT1-GRB','CUT2-ALL']
 repeats = 5
 data_names = ['house-votes-84_enc']
 file = 'pareto.csv'

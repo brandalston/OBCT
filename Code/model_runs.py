@@ -55,13 +55,11 @@ def main(argv):
         elif opt in ("-f", "--results_file"):
             file_out = arg
 
-
     ''' Columns of the results file generated '''
-    summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjVal',
-                       '# CB', 'User Cuts', 'Cuts/CB', 'CB-Time', 'INT-CB-time', 'FRAC-CB-TIME', 'CB-Eps',
-                       'Model', 'Time Limit', 'Rand. State',
-                       '% Fixed', 'Calibration', 'CC',
-                       'Single Feature Use', 'Level Tree', 'Max Features', 'Super Feature']
+    summary_columns = ['Data', 'H', '|I|', 'Out_Acc', 'In_Acc', 'Sol_Time', 'MIP_Gap', 'Obj_Bound', 'Obj_Val', 'Model',
+                       'Num_CB', 'User_Cuts', 'Cuts_per_CB', 'Total_CB_Time', 'INT_CB_Time', 'FRAC_CB_Time', 'CB_Eps',
+                       'Time_Limit', 'Rand_State', '%_Fixed', 'Calibration', 'CC',
+                       'Single_Feature_Use', 'Level_Tree', 'Max_Features', 'Super_Feature', 'Extras_Time']
     output_path = os.getcwd() + '/results_files/'
     fig_path = os.getcwd() + '/results_figures/'
 
