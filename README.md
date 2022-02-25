@@ -51,7 +51,7 @@ model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",e
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -c tuning -f 'results.csv'
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -c None -f 'results.csv'
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the code in `model_runs.py` to change the label column
@@ -80,7 +80,7 @@ pareto_runs.main(["-d",data_names,"-h",height,"-m",models,"-t",3600,"-r",repeats
 
 To run from terminal do the following 
 ```bash
-python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -c tuning -f 'pareto.csv'
+python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -f 'pareto.csv'
 ```
 A `.png` file for each dataset called by the user is generated and stored in `\results_figures\` folder
 ***
