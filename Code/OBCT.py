@@ -139,7 +139,7 @@ class OBCT:
         self.totalvars += len(self.B)+len(self.W)+len(self.P)+len(self.S)
 
         '''
-        Model objective and BASE constraints
+        Model Objective and BASE constraints
         '''
         # Objective: Maximize the number of correctly classified datapoints
         # Max sum(S[i,v], i in I, v in V\1)
@@ -597,7 +597,7 @@ class OBCT:
             print('Optimal solution found in '+str(round(self.model.Runtime, 2))+'s. ('+str(time.strftime("%I:%M %p", time.localtime()))+')\n')
         else: print('Time limit reached. ('+str(time.strftime("%I:%M %p", time.localtime()))+')\n')
 
-        # uncomment to print tree assignments and training set source-terminal path
+        # Uncomment to print tree assignments and training set source-terminal path
         # RESULTS.dv_results(self.model, self.tree, self.features, self.classes, self.datapoints)
 
         if self.model._numcb > 0:
