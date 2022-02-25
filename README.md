@@ -2,7 +2,7 @@
 
 Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
 
-This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/downloads/gurobi-optimizer-eula/) solver. Required python packages are outlined in `requirements.txt`.
+This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/downloads/gurobi-optimizer-eula/) solver. Required python packages are outlined in `requirements.txt`.
 
 *** 
 ***
@@ -60,7 +60,7 @@ Note:
 
 ***
 ## Pareto Frontier
-To generate the Pareto frontier call the pareto_runs.main() function with the below parameters:
+To generate the Pareto frontier call the `main` function in `pareto_runs.py` with the below parameters:
   - d : str list, names of dataset files
   - h : int, maximum depth of trained trees
   - t : float, gurobi model time limit in s
@@ -82,11 +82,11 @@ To run from terminal do the following
 ```bash
 python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -c tuning -f 'pareto.csv'
 ```
-A `.png` file with the pareto_runs functional parameter call is generated and stored in `\results_figures\` folder
+A `.png` file for each dataset called by the user is generated and stored in `\results_figures\` folder
 ***
 
 ## Models Functionality
-For understanding model functionality associated with integer and fractional separation procedures in CUT1 and CUT2 models, `-e model_extras` and `-c tuning` functionality please refer to the `USAGE.md` file. 
+For understanding model functionality associated with integer and fractional separation procedures in **CUT1** and **CUT2** models, `-e model_extras` and `-c tuning` functionality please refer to the `USAGE.md` file. 
 
 ***
 
