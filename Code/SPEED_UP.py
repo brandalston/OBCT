@@ -4,6 +4,7 @@ import time
 
 
 def fixing(tree, data):
+    # Generate unreachable nodes in tree using [0,1] count of datapoints and 'left, right' paths to vertices in the tree
     feats = list(data.columns)
     feats.remove('target')
     data['lefts'] = len(feats) - data[feats].sum(axis=1)
@@ -124,7 +125,7 @@ def both(model, where):
 
 
 def int1(model, where):
-    # add all violating INT cuts in 1,v path of datapoint terminal node
+    # Add all violating INT cuts in 1,v path of datapoint terminal node
     if where == GRB.Callback.MIPSOL:
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
@@ -150,7 +151,7 @@ def int1(model, where):
 
 
 def int2(model, where):
-    # add first found INT cut in 1,v path of datapoint terminal node
+    # Add the first found INT cut in 1,v path of datapoint terminal node
     if where == GRB.Callback.MIPSOL:
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
@@ -178,7 +179,8 @@ def int2(model, where):
 
 
 def int3(model, where):
-    # add most violating INT cut in 1,v path of datapoint terminal node
+    # Add the most violating INT cut in 1,v path of datapoint terminal node
+    # If more than one most violating cut exists, add the one closest to the root
     if where == GRB.Callback.MIPSOL:
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
@@ -209,7 +211,7 @@ def int3(model, where):
 
 
 def frac1(model, where):
-    # add all violating FRAC cuts in 1,v path of datapoint terminal node in branch and bound tree
+    # Add all violating FRAC cuts in 1,v path of datapoint terminal node in branch and bound tree
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
@@ -239,7 +241,7 @@ def frac1(model, where):
 
 
 def frac2(model, where):
-    # add first found violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
+    # Add the first found violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
@@ -271,7 +273,8 @@ def frac2(model, where):
 
 
 def frac3(model, where):
-    # add most violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
+    # Add most violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
+    # If more than one most violating cut exists add the one closest to the root
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return

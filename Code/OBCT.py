@@ -7,6 +7,19 @@ import time
 class OBCT:
     
     def __init__(self, data, tree, model, time_limit, target, name, encoding_map, warm_start=None, unreachable=None, model_extras=None):
+        '''
+        :param data: training data
+        :param tree: input decision tree object of prespecified user height
+        :param model: model to use for connectivity and optimization
+        :param time_limit: gurobi time limit in seconds
+        :param target: target column of training data
+        :param name: name of dataset
+        :param encoding_map: encoding map of one-hot-encoded features of training data
+        :param warm_start: dictionary warm start values
+        :param unreachable: dictionary of unreachable DV and vertices
+        :param model_extras: list of model extras
+        '''
+
         self.modeltype = model
         self.tree = tree
         self.data = data
@@ -562,7 +575,7 @@ class OBCT:
                 if '2' in self.cb_type: self.model.optimize(SPEED_UP.frac2)
                 if '3' in self.cb_type: self.model.optimize(SPEED_UP.frac3)
             if 'BOTH' in self.cb_type:
-                # user cb.Lazy FRAC and INT SQ cuts
+                # User cb.Lazy FRAC and INT S-Q cuts
                 self.model.Params.LazyConstraints = 1
                 self.model.Params.PreCrush = 1
                 self.model.optimize(SPEED_UP.both)

@@ -6,6 +6,7 @@ import os
 
 
 def dv_results(model, tree, features, classes, datapoints):
+    # Print assigned features, classes, and pruned nodes of tree
     for v in tree.DG_prime.nodes:
         for f in features:
             if model._B[v, f].x > .5:
@@ -16,7 +17,7 @@ def dv_results(model, tree, features, classes, datapoints):
         if model._P[v].x < .5 and 1.0 not in [model._B[v, f].x for f in features]:
             print('vertex '+str(v)+' pruned')
 
-    # uncomment to print datapoint paths through tree
+    # Print datapoint paths through tree
     '''
     for i in datapoints:
         for v in tree.DG_prime.nodes:
@@ -100,6 +101,7 @@ def model_acc(tree, target, data):
 
 
 def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file):
+    # Log model results to .csv file and save .png if applicable
     node_assign(opt_model, tree)
     if tree_check(tree):
         print('Invalid Tree!!')
@@ -124,6 +126,7 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
 
 
 def pareto_frontier(data):
+    # Generate pareto frontier
     models = data['Model'].unique()
     name = data['Data'].unique()[0]
     height = max(data['H'].unique())
