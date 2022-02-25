@@ -97,13 +97,11 @@ def conflict(model, where):
     if where == GRB.Callback.MIPSOL:
         q_val = {key: item for key, item in model.cbGetSolution(model._Q).items() if item > .5}
         branch = {key: item for key, item in model.cbGetSolution(model._B).items() if item > .5}
-        start = time.perf_counter()
         for (i, v) in q_val.keys():
             for (n, f) in branch.keys():
                 if model.data.at[i, f] == (v % 2) and v in model.successor[n]:
                     model.cbLazy(model._Q[i, v] + model._B[n, f] <= 1)
                     model._numcuts += 1
-        model._cbtime += (time.perf_counter() - start)
         # print(f'Callback MIPSOL {model._numcb}: {model._numcuts} conflict lazy constraints')
 
 
@@ -127,10 +125,10 @@ def both(model, where):
 def int1(model, where):
     # Add all violating INT cuts in 1,v path of datapoint terminal node
     if where == GRB.Callback.MIPSOL:
+        start = time.perf_counter()
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
         s_val = {key: item for key, item in model.cbGetSolution(model._S).items() if item > .5}
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
@@ -153,10 +151,10 @@ def int1(model, where):
 def int2(model, where):
     # Add the first found INT cut in 1,v path of datapoint terminal node
     if where == GRB.Callback.MIPSOL:
+        start = time.perf_counter()
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
         s_val = {key: item for key, item in model.cbGetSolution(model._S).items() if item > .5}
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
@@ -182,10 +180,10 @@ def int3(model, where):
     # Add the most violating INT cut in 1,v path of datapoint terminal node
     # If more than one most violating cut exists, add the one closest to the root
     if where == GRB.Callback.MIPSOL:
+        start = time.perf_counter()
         model._numcb += 1
         q_val = model.cbGetSolution(model._Q)
         s_val = {key: item for key, item in model.cbGetSolution(model._S).items() if item > .5}
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
@@ -213,12 +211,12 @@ def int3(model, where):
 def frac1(model, where):
     # Add all violating FRAC cuts in 1,v path of datapoint terminal node in branch and bound tree
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
+        start = time.perf_counter()
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)
         s_val = model.cbGetNodeRel(model._S)
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
@@ -243,12 +241,12 @@ def frac1(model, where):
 def frac2(model, where):
     # Add the first found violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
+        start = time.perf_counter()
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)
         s_val = model.cbGetNodeRel(model._S)
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
@@ -276,12 +274,12 @@ def frac3(model, where):
     # Add most violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
     # If more than one most violating cut exists add the one closest to the root
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
+        start = time.perf_counter()
         if model._rootnode:
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)
         s_val = model.cbGetNodeRel(model._S)
-        start = time.perf_counter()
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:

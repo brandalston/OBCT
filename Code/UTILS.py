@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
 import sys
 import time
 import random
@@ -222,3 +220,19 @@ def path_tree(base_tree, feature_list, classes, path, child):
             else: break
         node_list.remove(selected)
     return base_tree
+
+
+class consol_log:
+    def __init__(self, filename="Default.log"):
+        self.terminal = sys.stdout
+        self.log = open(filename, "a")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        # this flush method is needed for python 3 compatibility.
+        # this handles the flush command by doing nothing.
+        # you might want to specify some extra behavior here.
+        pass

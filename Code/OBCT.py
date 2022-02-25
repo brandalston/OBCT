@@ -57,6 +57,7 @@ class OBCT:
         self.super_feature = False
         self.fixed = 0
         self.calibration = False
+        self.extrastime = 0
 
         # Gurobi optimization parameters
         self.cb_type = self.modeltype[5:]
@@ -103,7 +104,7 @@ class OBCT:
         self.model.Params.Threads = 1
 
         # CUT-1,2 model callback metrics
-        self.model._numcuts, self.model._numcb, self.model._cbtime = 0, 0, 0
+        self.model._numcuts, self.model._numcb, self.model._cbtime, self.model._extrastime = 0, 0, 0, self.extrastime
         self.model._mipsoltime, self.model._mipnodetime = 0, 0
         self.model._cuttype, self.model._lazycuts, self.model._rootnode = self.cb_type, self.tree.Lazycuts, self.rootnode
         self.model._eps, self.model._epsval = self.eps, self.epsval
@@ -114,7 +115,9 @@ class OBCT:
         if warm_start is not None:
             self.warmstart = True
             self.wsv = warm_start
-        else: self.warmstart = False
+            self.extrastime += warm_start['time']
+        else:
+            self.warmstart = False
 
     ###########################################
     # MIP FORMULATIONS

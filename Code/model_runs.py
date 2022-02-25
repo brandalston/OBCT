@@ -59,7 +59,7 @@ def main(argv):
     summary_columns = ['Data', 'H', '|I|', 'Out_Acc', 'In_Acc', 'Sol_Time', 'MIP_Gap', 'Obj_Bound', 'Obj_Val', 'Model',
                        'Num_CB', 'User_Cuts', 'Cuts_per_CB', 'Total_CB_Time', 'INT_CB_Time', 'FRAC_CB_Time', 'CB_Eps',
                        'Time_Limit', 'Rand_State', '%_Fixed', 'Calibration', 'CC',
-                       'Single_Feature_Use', 'Level_Tree', 'Max_Features', 'Super_Feature', 'Extras_Time']
+                       'Single_Feature_Use', 'Level_Tree', 'Max_Features', 'Super_Feature']
     output_path = os.getcwd() + '/results_files/'
     fig_path = os.getcwd() + '/results_figures/'
 
@@ -152,17 +152,16 @@ def main(argv):
                         # Optimize model with callback if applicable
                         opt_model.model.update()
                         opt_model.optimization()
-
-                        # Uncomment to write .lp file to \results_files folder
-                        # lp_name = output_path+'_'+str(file)+'_'+str(h)+'_'\
-                        #          +str(modeltype)+'_'+'T:'+str(time_limit)+'_'+str(model_extras)
-                        # opt_model.model.write(lp_name + '.lp')
-
-                        # Generate model performance metrics and save to .csv file and .png figure of assigned tree if applicable
+                        # Generate model performance metrics and save to .csv file in .../results_files/
+                        # Generate .png figure of assigned tree if applicable and save in .../results_figures/
                         fig_file = fig_path + str(file) + '_H:' + str(h) + '_' + str(modeltype) + '_T:' + str(
                             time_limit) + '_' + str(model_extras) + '.png'
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                                          rand_state=rand_states[i], results_file=out_file, fig_file=fig_file)
+                        # Uncomment to write consol log .txt file to .../results_files/ folder
+                        consol_log_file = output_path+'_'+str(file)+'_'+str(h)+'_'+str(modeltype)+'_'+'T:'+str(
+                                          time_limit)+'_'+str(model_extras)+'.txt'
+                        sys.stdout = OU.consol_log(consol_log_file)
                     else:
                         OCT_tree = FlowOCTTree(d=h)
                         # FlowOCT model
@@ -188,8 +187,8 @@ def main(argv):
                                 results_writer.writerow(
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, primal.model.Runtime,
-                                     primal.model.MIPGap, primal.model.ObjVal,
-                                     0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
+                                     primal.model.MIPGap, primal.model.ObjBound, primal.model.ObjVal, modeltype,
+                                     0, 0, 0, 0, 0, 0, 0, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
                         # BendersOCT model
@@ -215,8 +214,8 @@ def main(argv):
                                 results_writer.writerow(
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, master.model.Runtime,
-                                     master.model.MIPGap, master.model.ObjVal,
-                                     0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
+                                     master.model.MIPGap, master.model.ObjBound, master.model.ObjVal, modeltype,
+                                     0, 0, 0, 0, 0, 0, 0, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
 
