@@ -101,7 +101,7 @@ def model_acc(tree, target, data):
 
 def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file):
     node_assign(opt_model, tree)
-    if tree_check(tree=tree):
+    if tree_check(tree):
         print('Invalid Tree!!')
     if fig_file is not None:
         nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
@@ -126,7 +126,7 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
 def pareto_frontier(data):
     models = data['Model'].unique()
     name = data['Data'].unique()[0]
-    height = data['H'].unique()[0]
+    height = max(data['H'].unique())
     dom_points = []
     for model in models:
         sub_data = data.loc[data['Model'] == model]

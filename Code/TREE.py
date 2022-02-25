@@ -1,6 +1,5 @@
 import networkx as nx
-import pydot
-from networkx.drawing.nx_pydot import graphviz_layout
+import graphviz
 
 
 class TREE():
@@ -34,4 +33,4 @@ class TREE():
 
         self.color_map = []
         self.labels = {n: None for n in self.DG_prime.nodes}
-        self.pos = graphviz_layout(self.DG_prime, prog="dot", root=0)
+        self.pos = nx.nx_pydot.graphviz_layout(self.DG_prime, prog="dot", root=0)
