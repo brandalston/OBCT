@@ -1,6 +1,6 @@
 # Optimal Binary Classification Trees
 
-Code for the paper [Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink)
+Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
 
 This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/downloads/gurobi-optimizer-eula/) solver. Required python packages are outlined in `requirements.txt`.
 
