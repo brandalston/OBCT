@@ -14,10 +14,9 @@ This code uses python3 (version 3.6 and higher) and requires the [Gurobi9.x](htt
   - `TREE.py` creates the necessary tree information including path, child, and other information
   - `SPEED_UP.py` contains the code for the callbacks used in user fractional separation procedures
   - `RESULTS.py` contains the code for viewing model decision variable results and generating the .csv results files among other model results
-
-- `results_figures` contains the generated .png files for experimental results
-- `results_files` stores the generated .csv files with model metrics
-- `Datasets` contains the datasets used for generating experimental results. It should also be used as the folder where user datasets are stored
+- `results_files/` folder stores the generated .csv files with model metrics
+- `results_figures/` folder stores the generated .png files for experimental results
+- `Datasets/` folder contains the datasets used for generating experimental results. It should also be used as the folder where user datasets are stored
 
 ***
 ***
@@ -83,7 +82,7 @@ To run from terminal do the following
 ```bash
 python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -c tuning -f 'pareto.csv'
 ```
-A `.png` file with the pareto_runs functional parameter call is generated and stored in `\results_figures\`
+A `.png` file with the pareto_runs functional parameter call is generated and stored in `\results_figures\` folder
 ***
 
 ## Models Functionality
