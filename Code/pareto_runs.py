@@ -93,6 +93,8 @@ def main(argv):
                                                                   data=train_set)
                     WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
                     if 'AGHA' == modeltype or 'OCT' in modeltype: WSV = None
+
+        # Generate pareto plot of models using run averages
         pareto_data = pd.pareto_data = pd.read_csv('results_files/pareto.csv', na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)

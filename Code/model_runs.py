@@ -96,16 +96,20 @@ def main(argv):
                 model_set = pd.concat([train_set, cal_set])
                 WSV, unreachable = None, {'data': {}, 'tree': {}}
                 if model_extras is not None:
+                    # Fix DV of models if applicable
                     if 'fixing' in model_extras:
                         unreachable = OSP.fixing(TREE(h), model_set)
                 for modeltype in modeltypes:
                     if 'OCT' not in modeltype:
+                        # Calibrate number of maximum branching nodes using pareto frontier and warm starts
+                        # Use a 25% calibration set for process
                         if 'calibration' == tuning:
                             print('Calibrating number of maximum branching features')
                             best_tree, best_feats, best_acc = {}, 0, 0
                             wsm = None
                             for num_features in range(1, 2 ** h):
-                                extras = [f'max_features-{num_features}']
+                                # Solve model with number of branching features = k for k in [1, B]
+                                extras = [f'num_features-{num_features}']
                                 cal_tree = TREE(h=h)
                                 cal_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype,
                                                  time_limit=time_limit, encoding_map=encoding_map, warm_start=wsm,
@@ -124,33 +128,45 @@ def main(argv):
                                 model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=best_tree, target=target,
                                                                               data=model_set)
                                 WSV = {'tree': best_tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
+                            # Assign calibrated number of branching nodes as model extra
                             if model_extras is not None:
                                 if any((match := elem).startswith('max_features') for elem in model_extras):
                                     model_extras[model_extras.index(match)] = 'max_features-' + str(best_feats)
                                 else: model_extras.append('max_features-'+str(best_feats))
                             else: model_extras = ['max_features-'+str(best_feats)]
+                        # Warm start model using the best of random path and level trees
                         elif 'warm_start' == tuning:
                             print('Generating warm start values')
                             cal_tree = TREE(h=h)
                             WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
+                        # Generate tree and necessary structure information
                         tree = TREE(h=h)
+                        # Model with 75% training set, applicable model extras and optimization time limit
                         opt_model = OBCT(data=model_set, tree=tree, target=target, model=modeltype,
                                          time_limit=time_limit, encoding_map=encoding_map, model_extras=model_extras,
                                          unreachable=unreachable, warm_start=WSV, name=file)
+                        # Add connectivity constraints according to model type
                         opt_model.formulation()
+                        # Add any model extras if applicable
                         if model_extras is not None:
                             opt_model.extras()
+                        # Optimize model with callback if applicable
                         opt_model.model.update()
                         opt_model.optimization()
+
+                        # Uncomment to write .lp file to \results_files folder
                         # lp_name = output_path+'_'+str(file)+'_'+str(h)+'_'\
                         #          +str(modeltype)+'_'+'T:'+str(time_limit)+'_'+str(model_extras)
                         # opt_model.model.write(lp_name + '.lp')
+
+                        # Generate model performance metrics and save to .csv file and .png figure of assigned tree if applicable
                         fig_file = fig_path + str(file) + '_H:' + str(h) + '_' + str(modeltype) + '_T:' + str(
                             time_limit) + '_' + str(model_extras) + '.png'
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                                          rand_state=rand_states[i], results_file=out_file, fig_file=fig_file)
                     else:
                         OCT_tree = FlowOCTTree(d=h)
+                        # FlowOCT model
                         if 'Flow' in modeltype:
                             print('Model: FlowOCT')
                             primal = FlowOCT(data=model_set, label=target, tree=OCT_tree,
@@ -177,6 +193,7 @@ def main(argv):
                                      0, 0, 0, 0, 0, 0, 0, modeltype, time_limit, rand_states[i],
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
+                        # BendersOCT model
                         elif 'Benders' in modeltype:
                             print('Model: BendersOCT')
                             master = BendersOCT(data=model_set, label=target, tree=OCT_tree,

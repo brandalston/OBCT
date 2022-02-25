@@ -1,4 +1,9 @@
 '''
+This file is the implementation of the BendersOCT model found in the paper ''[Strong Optimal Classification Trees](https://sites.google.com/view/sina-aghaei/home)''.
+and publically available on https://github.com/pashew94/StrongTree/Code/StrongTree/BendersOCT.py
+Code is taken directly from https://github.com/pashew94/StrongTree/Code/StrongTree/BendersOCT.py
+All rights and ownership are to the original owners
+
 This module formulate the BendersOCT problem in gurobipy.
 '''
 from gurobipy import *

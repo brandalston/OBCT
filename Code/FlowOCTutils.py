@@ -1,3 +1,11 @@
+'''
+This file are the utility functions necessary for the models found in the paper ''[Strong Optimal Classification Trees](https://sites.google.com/view/sina-aghaei/home)''.
+and publically available on https://github.com/pashew94/StrongTree/Code/StrongTree/utils.py
+Code is taken directly from https://github.com/pashew94/StrongTree/Code/StrongTree/utils.py
+All rights and ownership are to the original owners
+
+'''
+
 import numpy as np
 from gurobipy import *
 import time
