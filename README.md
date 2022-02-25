@@ -60,6 +60,31 @@ Note:
 - `-e model_extras`, `-c tuning`, and `-f file` may be `None` input arguments, all others must hold a valid value
 
 ***
+## Pareto Frontier
+To generate the Pareto frontier call the pareto_runs.main() function with the below parameters:
+  - d : str list, names of dataset files
+  - h : int, maximum depth of trained trees
+  - t : float, gurobi model time limit in s
+  - m : str list, models to use
+  - f : str, results output file .csv
+
+You can generate pareto frontiers from within a python file as follows,
+```python
+import pareto_runs
+height = 5
+models = ['AGHA','MCF1','MCF2','CUT1','CUT2']
+repeats = 5
+data_names = ['house-votes-84_enc']
+file = 'pareto.csv'
+pareto_runs.main(["-d",data_names,"-h",height,"-m",models,"-t",3600,"-r",repeats,"-f",file])
+```
+
+To run from terminal do the following 
+```bash
+python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -c tuning -f 'pareto.csv'
+```
+A `.png` file with the pareto_runs functional parameter call is generated and stored in `\results_figures\`
+***
 
 ## Models Functionality
 For understanding model functionality associated with integer and fractional separation procedures in CUT1 and CUT2 models, `-e model_extras` and `-c tuning` functionality please refer to the `USAGE.md` file. 
