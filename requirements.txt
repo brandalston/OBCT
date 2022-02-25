@@ -7,3 +7,4 @@ scikit-learn
 'For generated decision trees figures the following are necessary, but not required for solving models'
 matplotlib
 graphviz
+pydot
