@@ -50,10 +50,11 @@ def main(argv):
             model_extras = arg
         elif opt in ("-r", "--repeats"):
             repeats = arg
-        elif opt in ("-f", "--results_file"):
-            file_out = arg
         elif opt in ("-c", "--tuning"):
             tuning = arg
+        elif opt in ("-f", "--results_file"):
+            file_out = arg
+
 
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|', 'Out-Acc', 'In-Acc', 'Sol-Time', 'Gap', 'ObjVal',

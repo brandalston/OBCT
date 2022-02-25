@@ -7,15 +7,17 @@ import numpy as np
 
 '''
 models = ['FlowOCT','BendersOCT','AGHA','MCF1','MCF2',
-          'CUT1-GRB','CUT2-GRB','CUT1-ALL','CUT2-ALL',
-          'CUT2-FRAC1-ROOT', 'CUT1-FRAC2-ROOT']
+          'CUT1','CUT2-GRB','CUT1-ALL',
+          'CUT2-FRAC1-ROOT', 'CUT1-FRAC2-ROOT'
+          'CUT1-BOTH-I1-F3']
 time_limit = 3600
 repeats = 5
 extras = None
 file = 'paper_run.csv'
-data_names = ['hayes-roth_enc']
+data_names = ['hayes-roth_enc','soybean-small_enc','monk1_enc']
 heights = [2,3,4,5]
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",repeats,"-f",file])
+tuning = warm_start
+model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",repeats,"-f",file,"-c",tuning])
 '''
 
 height = 5
