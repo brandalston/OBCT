@@ -34,7 +34,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:c:",
                                    ["data_files=", "heights=", "timelimit=",
-                                    "models=", "extras=", "repeats=", "results_file=", "tuning="])
+                                    "models=", "repeats=", "extras=", "results_file=", "tuning="])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -46,10 +46,10 @@ def main(argv):
             time_limit = int(arg)
         elif opt in ("-m", "--model"):
             modeltypes = arg
-        elif opt in ("-e", "--extras"):
-            model_extras = arg
         elif opt in ("-r", "--repeats"):
             repeats = arg
+        elif opt in ("-e", "--extras"):
+            model_extras = arg
         elif opt in ("-c", "--tuning"):
             tuning = arg
         elif opt in ("-f", "--results_file"):
@@ -137,7 +137,7 @@ def main(argv):
                         elif 'warm_start' == tuning:
                             print('Generating warm start values')
                             cal_tree = TREE(h=h)
-                            WSV = OU.random_tree(target=target, data=data, tree=cal_tree)
+                            WSV = OU.random_tree(target=target, data=model_set, tree=cal_tree)
                         # Generate tree and necessary structure information
                         tree = TREE(h=h)
                         # Model with 75% training set, applicable model extras and optimization time limit

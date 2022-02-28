@@ -55,7 +55,7 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
   - ex.`-c 'calibration'` or `-c 'warm_start'`
     - Only one can be specified bewteen `calibration` and `warm_start`
 - `warm_start`
-  - Warm start models using randomly assigned tree
+  - Warm start models using randomly assigned tree and 25% calibration + 50% training set
 - `calibration`
   - Calibration which uses the second objective function as a constraint and generates the pareto frontier
   - First generate a 25% calibration training set for finding calibrated `max_features_k*` parameter
