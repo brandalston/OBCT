@@ -10,13 +10,16 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 ## Summary of Repository
 - `Code` contains the code of the formulations **MCF1**, **MCF2**, **CUT1**, **CUT2** and **AGHA**
   - `OBCT.py` contains the formulations of each model for solving using Gurobi9.x
-  - `model_runs.py` contains the code necessary to create, solve, and report results of each instance called by the user
   - `TREE.py` creates the necessary tree information including path, child, and other information
   - `SPEED_UP.py` contains the code for the callbacks used in user fractional separation procedures
   - `RESULTS.py` contains the code for viewing model decision variable results and generating the .csv results files among other model results
-- `results_files/` folder stores the generated .csv files with model metrics
-- `results_figures/` folder stores the generated .png files for experimental results
-- `Datasets/` folder contains the datasets used for generating experimental results. It should also be used as the folder where user datasets are stored
+  - `model_runs.py` contains the code necessary to create, solve, and report results in a `.csv` file of each instance called by the user
+  - `pareto_runs.py` contains the code necessary to create a pareto frontier `.png` file of instances called by the user
+
+- `results_files/` folder stores the generated `.csv` files with model metrics
+- `results_figures/` folder stores the generated `.png` files for experimental results
+- `Datasets/` folder contains the datasets used for generating experimental results
+  - Note: `Datasets/` should also be used as the folder where user dataset `.csv` files are stored
 
 ***
 ***
@@ -24,15 +27,15 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 ## Running Code
 
 - Ensure the latest versions of the packages in `requirements.txt` are installed
-- For  running an instance of OBCT run the `main` function in `model_runs.py` with the following arguments
-    - d : str list, names of dataset files
-    - h : int list, maximum depth of trained trees
-    - t : float, gurobi model time limit in s
-    - m : str list, models to use
-    - e : str list, model extras, if applicable
-    - r : int, number of repeat trees to generate for each model
-    - c : str, tuning parameter
-    - f : str, results output file .csv
+- For an instance of `OBCT` run the `main` function in `model_runs.py` with the following arguments
+    - d : `str list`, names of dataset files
+    - h : `int list`, maximum depth of trained trees
+    - t : `float`, gurobi model time limit in s
+    - m : `str list`, models to use
+    - r : `int`, number of repeat trees to generate for each model
+    - e : `str list`, model extras, if applicable
+    - c : `str`, tuning parameter
+    - f : `str`, results output file `.csv`
 
 You can call the `model_runs.py` main function within a python file as follows,
 
