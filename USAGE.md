@@ -51,17 +51,17 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
   - `'super_feature'`
 ***
 ## Tuning and Warm Starting
-- The `tuning` parameter is meant for warm starting the model for solution time and out-of-sample accuracy
+- The `-c tuning` parameter is meant for warm starting the model for solution time and out-of-sample accuracy
   - ex.`-c 'calibration'` or `-c 'warm_start'`
-    - Only one can be specified bewteen `calibration` and `warm_start`
-- `warm_start`
-  - Warm start models using randomly assigned tree and 25% calibration + 50% training set
-- `calibration`
-  - Calibration which uses the second objective function as a constraint and generates the pareto frontier
-  - First generate a 25% calibration training set for finding calibrated `max_features_k*` parameter
+  - Only one can be specified between `'calibration'` and `'warm_start'`
+- `'warm_start'`
+  - Warm start model using randomly assigned tree and 25% calibration + 50% training set
+- `'calibration'`
+  - Uses the second objective function as a constraint for calibrating the number of totla branching features
+  - Use a 25% calibration set for calibrating `max_features_k*` parameter
   - Each `max_features_k-1` DT is used as a warm for the `max_features_k` DT
   - Use `k`  in [ 1 , B ]
-  - The best in-sample-accuracy `max_features_k*` is used as the calibrated decision tree
+  - The `max_features_k*` corresponding to best in-sample accuracy is used as the calibrated decision tree
     - Note: `max_features_k*` replaces any user specified `max_features`
   - Train full model on 25% calibration set + 50% training set
   - Warm start full model using calibration + training dataset assignments and assigned tree
