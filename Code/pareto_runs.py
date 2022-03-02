@@ -11,7 +11,10 @@ from OBCT import OBCT
 from TREE import TREE
 import UTILS as OU
 import RESULTS as OR
-
+from FlowOCT import FlowOCT
+from BendersOCT import BendersOCT
+import FlowOCTutils
+from FlowOCTTree import Tree as FlowOCTTree
 
 def main(argv):
     print(argv)
@@ -92,13 +95,13 @@ def main(argv):
                     model_wsm_acc, model_wsm_assgn = OR.model_acc(tree=tree, target=target,
                                                                   data=train_set)
                     WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': model_wsm_assgn}
-                    if 'AGHA' == modeltype or 'OCT' in modeltype: WSV = None
+                    if 'AGHA' == modeltype: WSV = {'tree': tree.DG_prime.nodes(data=True), 'data': False}
 
-        # Generate pareto plot of models using run averages
+        # Generate pareto plot of models using run averages of pareto.csv file
         pareto_data = pd.pareto_data = pd.read_csv('results_files/pareto.csv', na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)
-        for model in modeltypes:
+        for model in ['AGHA','MCF1','MCF2','CUT1','CUT2','FlowOCT','BendersOCT']:
             sub_data = file_data.loc[file_data['Model'] == model]
             for feature in sub_data['Max Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max Features'] == feature]

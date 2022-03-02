@@ -78,18 +78,19 @@ def warm_start(opt_model, warm_start_values):
     #   For non AGHA Models also activate correct source-terminal nodes for Q
     #       If node in source-terminal path of datapoint
     #       q_i,n: start = 1, otherwise = 0
-    for i in opt_model.datapoints:
-        for n in opt_model.tree.B + opt_model.tree.L:
-            if n == warm_start_values['data'][i][2][-1] and 'correct' in warm_start_values['data'][i]:
-                opt_model.S[i, n].start = 1.0
-            elif n == warm_start_values['data'][i][2][-1]:
-                opt_model.S[i, n].start = 0.0
-            else:
-                opt_model.S[i, n].start = 0.0
-            if n in warm_start_values['data'][i][2]:
-                opt_model.Q[i, n].start = 1.0
-            else:
-                opt_model.Q[i, n].start = 0.0
+    if warm_start_values['data']:
+        for i in opt_model.datapoints:
+            for n in opt_model.tree.B + opt_model.tree.L:
+                if n == warm_start_values['data'][i][2][-1] and 'correct' in warm_start_values['data'][i]:
+                    opt_model.S[i, n].start = 1.0
+                elif n == warm_start_values['data'][i][2][-1]:
+                    opt_model.S[i, n].start = 0.0
+                else:
+                    opt_model.S[i, n].start = 0.0
+                if n in warm_start_values['data'][i][2]:
+                    opt_model.Q[i, n].start = 1.0
+                else:
+                    opt_model.Q[i, n].start = 0.0
     return opt_model
 
 

@@ -115,7 +115,6 @@ class OBCT:
         if warm_start is not None:
             self.warmstart = True
             self.wsv = warm_start
-            self.extrastime += warm_start['time']
         else:
             self.warmstart = False
 
