@@ -1,7 +1,7 @@
 
 import model_runs
 import pareto_runs
-
+import e2lvp
 
 '''
 models = ['FlowOCT','BendersOCT','AGHA','MCF1','MCF2',
@@ -23,4 +23,8 @@ models = ['AGHA','MCF1','MCF2','CUT1','CUT2']
 repeats = 5
 data_names = ['house-votes-84_enc']
 file = 'pareto.csv'
-pareto_runs.main(["-d",data_names,"-h",height,"-m",models,"-t",3600,"-r",repeats,"-f",file])
+models = []
+# pareto_runs.main(["-d",data_names,"-h",height,"-m",models,"-t",3600,"-r",repeats,"-f",file])
+excel_filename = '/Users/brandonalston/PycharmProjects/OBCT/Code/results_files/latex_tables.xlsx'
+set_output_dir = '/Users/brandonalston/PycharmProjects/OBCT/Code/results_files'
+e2lvp.excel2latexviapython(excel_filename, set_output_dir, booktabs=True, includetabular=True, numdp=2, makepdf=False)
