@@ -37,6 +37,7 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
     - c : `str`, tuning parameter
     - f : `str`, results output file `.csv`
     - p : `boolean`, generate `.png` figures of each assigned decision tree in user function call
+    - l : `boolean`, log consol to `.txt` file saved to the `\results_files` folder for each model called by user
 
 You can call the `model_runs.py` main function within a python file as follows,
 
@@ -44,23 +45,24 @@ You can call the `model_runs.py` main function within a python file as follows,
 import model_runs
 data_names = ['monk1_enc','breast-cancer_enc']
 heights = [2,3,4,5]
-models = ['MCF1','MCF2','CUT1','CUT2']
+models = ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2']
 time_limit = 3600
 extras = ['fixing','max_features-15']
-rand_states = [138, 15, 89, 42, 0]
+rand_states = [138, 15, 89, 42, 0, None]
 tuning = None
 file = 'results.csv'
 plot_fig = False
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-p",plot_fig])
+consol_log = True
+model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-p",plot_fig,"-l", consol_log])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -p False
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -p False -l True
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
-- If results output file `-f file` is `None` the `models_run.py` automatically generates a `.csv` results file with the parameters of the function call as the file name
+- If results output file `-f file` is `None` the `models_run.py` automatically generates a `.csv` results file with the parameters of the function call as the file name saved to the `\results_files` folder
 - `-e model_extras`, `-c tuning`, and `-f file` may be `None` input arguments, all others must hold a valid value
 
 ***
@@ -75,7 +77,7 @@ To generate the Pareto frontier call the `main` function in `pareto_runs.py` wit
 A `.png` file for each dataset called by the user is generated and stored in `\results_figures\` folder
 
 We assume `-f file` is located in the `\results_files` folder
-- If results output file `-f file` is `None` the `pareto_runs.py` automatically generates a `.csv` results file with the parameters of the function call as the file name
+- If results output file `-f file` is `None` the `pareto_runs.py` automatically generates a `.csv` results file with the parameters of the function call as the file name saved to the `\results_files` folder
 
 You can generate pareto frontiers from within a python file as follows,
 ```python
