@@ -60,7 +60,7 @@ class BendersOCT:
         # Gurobi model
         self.model = Model('BendersOCT')
         self.model.params.TimeLimit = time_limit
-        self.model.params.LogToConsole = 0
+        self.model.params.LogToConsole = 1
         # The cuts we add in the callback function would be treated as lazy constraints
         self.model.params.LazyConstraints = 1
         '''

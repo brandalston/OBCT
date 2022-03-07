@@ -99,7 +99,7 @@ class OBCT:
         # Gurobi model
         self.model = Model(f'{self.modeltype}')
         self.model.Params.TimeLimit = time_limit
-        self.model.Params.LogToConsole = 0
+        self.model.Params.LogToConsole = 1
         # Use only 1 thread for testing purposes
         self.model.Params.Threads = 1
 

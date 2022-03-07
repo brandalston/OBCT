@@ -29,11 +29,13 @@ def main(argv):
     file_out = None
     tuning = None
     plot_fig = None
+    consol_log = None
 
     try:
-        opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:c:",
+        opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:c:p:l:",
                                    ["data_files=", "heights=", "timelimit=",
-                                    "models=", "rand_states=", "extras=", "tuning=", "results_file=", "plot_fig="])
+                                    "models=", "rand_states=", "extras=", "tuning=",
+                                    "results_file=", "plot_fig=", "consol_log"])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -55,6 +57,8 @@ def main(argv):
             file_out = arg
         elif opt in ("-p", "--plot_fig"):
             plot_fig = arg
+        elif opt in ("-l", "--consol_log"):
+            consol_log = arg
 
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|', 'Out_Acc', 'In_Acc', 'Sol_Time', 'MIP_Gap', 'Obj_Bound', 'Obj_Val', 'Model',
@@ -68,9 +72,9 @@ def main(argv):
         output_name = str(data_files) + '_H:' + str(heights) + '_' + str(modeltypes) + \
                       '_T:' + str(time_limit) + '_' + str(model_extras) + '.csv'
     else:
-        output_name = str(file_out)
+        output_name = file_out
     out_file = output_path + output_name
-    if not exists(out_file):
+    if file_out is None:
         with open(out_file, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(summary_columns)
@@ -159,10 +163,10 @@ def main(argv):
                         else: fig_file = None
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                                          rand_state=i, results_file=out_file, fig_file=fig_file)
-                        # Uncomment to write consol log .txt file to .../results_files/ folder
-                        consol_log_file = output_path+'_'+str(file)+'_'+str(h)+'_'+str(modeltype)+'_'+'T:'+str(
-                                          time_limit)+'_'+str(model_extras)+'.txt'
-                        sys.stdout = OU.consol_log(consol_log_file)
+                        if consol_log:
+                            consol_log_file = output_path+'_'+str(file)+'_'+str(h)+'_'+str(modeltype)+'_'+'T:'+str(
+                                              time_limit)+'_'+str(model_extras)+'.txt'
+                            sys.stdout = OU.consol_log(consol_log_file)
                     else:
                         OCT_tree = FlowOCTTree(d=h)
                         # FlowOCT model

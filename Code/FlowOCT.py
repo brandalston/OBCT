@@ -67,7 +67,7 @@ class FlowOCT:
         the strength of the formulation.
         '''
         self.model.params.TimeLimit = time_limit
-        self.model.params.LogToConsole = 0
+        self.model.params.LogToConsole = 1
         self.model.params.Threads = 1
 
         '''
