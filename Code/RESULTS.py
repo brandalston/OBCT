@@ -18,14 +18,12 @@ def dv_results(model, tree, features, classes, datapoints):
             print('vertex '+str(v)+' pruned')
 
     # Print datapoint paths through tree
-    '''
     for i in datapoints:
         for v in tree.DG_prime.nodes:
             if model._Q[i, v].x > 0.5:
                 print('datapoint '+str(i)+' use vertex '+str(v)+' in source-terminal path')
             if model._S[i, v].x > 0.5:
                 print('datapoint '+str(i)+' terminal vertex '+str(v))
-    '''
 
 
 def node_assign(model, tree):
@@ -105,9 +103,6 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
     node_assign(opt_model, tree)
     if tree_check(tree):
         print('Invalid Tree!!')
-    if fig_file is not None:
-        nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
-        plt.savefig(fig_file)
     test_acc, test_assignments = model_acc(tree=tree, target=opt_model.target, data=test_set)
     train_acc, train_assignments = model_acc(tree=tree, target=opt_model.target, data=opt_model.data)
 
@@ -124,9 +119,13 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
              opt_model.single_use, opt_model.level_tree, opt_model.max_features, opt_model.super_feature])
         results.close()
 
+    if fig_file is not None:
+        nx.draw(tree.DG_prime, pos=tree.pos, node_color=tree.color_map, labels=tree.labels, with_labels=True)
+        plt.savefig(fig_file)
 
-def pareto_frontier(data):
-    # Generate pareto frontier
+
+def pareto_plot(data):
+    # Generate pareto frontier .png file
     models = data['Model'].unique()
     name = data['Data'].unique()[0]
     height = max(data['H'].unique())

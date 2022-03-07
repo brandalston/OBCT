@@ -25,16 +25,15 @@ def main(argv):
     time_limit = None
     modeltypes = None
     model_extras = None
-    repeats = None
+    rand_states = None
     file_out = None
     tuning = None
-
-    rand_states = [138, 15, 89, 42, 0]
+    plot_fig = None
 
     try:
         opts, args = getopt.getopt(argv, "d:h:t:m:e:r:f:c:",
                                    ["data_files=", "heights=", "timelimit=",
-                                    "models=", "repeats=", "extras=", "results_file=", "tuning="])
+                                    "models=", "rand_states=", "extras=", "tuning=", "results_file=", "plot_fig="])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -46,14 +45,16 @@ def main(argv):
             time_limit = int(arg)
         elif opt in ("-m", "--model"):
             modeltypes = arg
-        elif opt in ("-r", "--repeats"):
-            repeats = arg
+        elif opt in ("-r", "--rand_states"):
+            rand_states = arg
         elif opt in ("-e", "--extras"):
             model_extras = arg
         elif opt in ("-c", "--tuning"):
             tuning = arg
         elif opt in ("-f", "--results_file"):
             file_out = arg
+        elif opt in ("-p", "--plot_fig"):
+            plot_fig = arg
 
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|', 'Out_Acc', 'In_Acc', 'Sol_Time', 'MIP_Gap', 'Obj_Bound', 'Obj_Val', 'Model',
@@ -81,17 +82,16 @@ def main(argv):
     '''We assume the target column of dataset is labeled 'target'
     Change value at your discretion '''
     target = 'target'
-    repeats = repeats
 
     for file in data_files:
         # pull dataset to train model with
         data, encoding_map = OU.get_data(file.replace('.csv', ''), target)
         for h in heights:
-            for i in range(repeats):
+            for i in rand_states:
                 print('\n\nDataset: '+str(file)+', H: '+str(h)+','
-                      'Iteration: '+str(i)+'. Run Start: '+str(time.strftime("%I:%M %p", time.localtime())))
-                train_set, test_set = train_test_split(data, train_size=0.5, random_state=rand_states[i])
-                cal_set, test_set = train_test_split(test_set, train_size=0.5, random_state=rand_states[i])
+                      'Rand State: '+str(i)+'. Run Start: '+str(time.strftime("%I:%M %p", time.localtime())))
+                train_set, test_set = train_test_split(data, train_size=0.5, random_state=i)
+                cal_set, test_set = train_test_split(test_set, train_size=0.5, random_state=i)
                 model_set = pd.concat([train_set, cal_set])
                 WSV, unreachable = None, {'data': {}, 'tree': {}}
                 if model_extras is not None:
@@ -154,10 +154,11 @@ def main(argv):
                         opt_model.optimization()
                         # Generate model performance metrics and save to .csv file in .../results_files/
                         # Generate .png figure of assigned tree if applicable and save in .../results_figures/
-                        fig_file = fig_path + str(file) + '_H:' + str(h) + '_' + str(modeltype) + '_T:' + str(
+                        if plot_fig: fig_file = fig_path + str(file) + '_H:' + str(h) + '_' + str(modeltype) + '_T:' + str(
                             time_limit) + '_' + str(model_extras) + '.png'
+                        else: fig_file = None
                         OR.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
-                                         rand_state=rand_states[i], results_file=out_file, fig_file=fig_file)
+                                         rand_state=i, results_file=out_file, fig_file=fig_file)
                         # Uncomment to write consol log .txt file to .../results_files/ folder
                         consol_log_file = output_path+'_'+str(file)+'_'+str(h)+'_'+str(modeltype)+'_'+'T:'+str(
                                           time_limit)+'_'+str(model_extras)+'.txt'
@@ -188,7 +189,7 @@ def main(argv):
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, primal.model.Runtime,
                                      primal.model.MIPGap, primal.model.ObjBound, primal.model.ObjVal, modeltype,
-                                     0, 0, 0, 0, 0, 0, 0, time_limit, rand_states[i],
+                                     0, 0, 0, 0, 0, 0, 0, time_limit, i,
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
                         # BendersOCT model
@@ -215,7 +216,7 @@ def main(argv):
                                     [file.replace('.csv', ''), h, len(model_set),
                                      test_acc, train_acc, master.model.Runtime,
                                      master.model.MIPGap, master.model.ObjBound, master.model.ObjVal, modeltype,
-                                     0, 0, 0, 0, 0, 0, 0, time_limit, rand_states[i],
+                                     0, 0, 0, 0, 0, 0, 0, time_limit, i,
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
 

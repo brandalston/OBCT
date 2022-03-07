@@ -484,46 +484,44 @@ class OBCT:
     def extras(self):
         # conflict constraints: datapoint cannot select child of branching node based on feature value
         if 'conflict_constraints' in self.modelextras:
-            if 'AGHA' not in self.modeltype:
-                self.cc = True
-                print('Adding conflict constraints')
-                conflict_constraints = self.model.addConstrs(self.model.Q[i, v] + self.model.B[self.tree.direct_ancestor[v], f] <= 1
-                                                             for i in self.datapoints
-                                                             for v in self.tree.B + self.tree.L if v != 0
-                                                             for f in self.features if self.data.at[i, f] == (v % 2))
-                for i in self.datapoints:
-                    for v in self.tree.B + self.tree.L:
-                        if v == 0: continue
-                        for f in self.features:
-                            if self.data.at[i, f] == (v % 2): conflict_constraints[i, v, f].lazy = 3
+            self.cc = True
+            print('Adding conflict constraints')
+            conflict_constraints = self.model.addConstrs(self.model.Q[i, v] + self.model.B[self.tree.direct_ancestor[v], f] <= 1
+                                                         for i in self.datapoints
+                                                         for v in self.tree.B + self.tree.L if v != 0
+                                                         for f in self.features if self.data.at[i, f] == (v % 2))
+            for i in self.datapoints:
+                for v in self.tree.B + self.tree.L:
+                    if v == 0: continue
+                    for f in self.features:
+                        if self.data.at[i, f] == (v % 2): conflict_constraints[i, v, f].lazy = 3
 
         # fixing DV of unreachable nodes
         if 'fixing' in self.modelextras:
-            if 'AGHA' not in self.modeltype:
-                self.fixing = True
-                if self.unreachable['data']:
-                    for i in self.unreachable['data']:
-                        for v in self.unreachable['data'][i]:
-                            self.S[i, v].ub = 0
-                            self.Q[i, v].ub = 0
-                            self.fixedvars += 2
-                            if 'MCF1' in self.modeltype:
-                                # no outgoing flow of datapoint i through v
-                                for u in list(self.tree.DG_prime.neighbors(v)):
-                                    self.Z[i, v, u].ub = 0
-                                    self.fixedvars += 1
-                            if 'MCF2' in self.modeltype:
-                                # no flow of type datapoint i going to node v in tree
-                                for (x, y) in list(self.tree.DG_prime.edges):
-                                    self.Z[i, v, x, y].ub = 0
-                                    self.fixedvars += 1
-                self.fixed = self.fixedvars / self.totalvars
-                print('Fixed ' + str(round(100 * self.fixedvars / self.totalvars, 3)) + '% of model variables.')
-                if self.unreachable['tree']:
-                    for v in self.unreachable['tree']:
-                        self.P[v].ub = 0
-                        for f in self.features: self.B[v, f].ub = 0
-                    print('Pruned nodes ' + str(list(self.unreachable['tree'].keys())))
+            self.fixing = True
+            if self.unreachable['data']:
+                for i in self.unreachable['data']:
+                    for v in self.unreachable['data'][i]:
+                        self.S[i, v].ub = 0
+                        self.Q[i, v].ub = 0
+                        self.fixedvars += 2
+                        if 'MCF1' in self.modeltype:
+                            # no outgoing flow of datapoint i through v
+                            for u in list(self.tree.DG_prime.neighbors(v)):
+                                self.Z[i, v, u].ub = 0
+                                self.fixedvars += 1
+                        if 'MCF2' in self.modeltype:
+                            # no flow of type datapoint i going to node v in tree
+                            for (x, y) in list(self.tree.DG_prime.edges):
+                                self.Z[i, v, x, y].ub = 0
+                                self.fixedvars += 1
+            self.fixed = self.fixedvars / self.totalvars
+            print('Fixed ' + str(round(100 * self.fixedvars / self.totalvars, 3)) + '% of model variables.')
+            if self.unreachable['tree']:
+                for v in self.unreachable['tree']:
+                    self.P[v].ub = 0
+                    for f in self.features: self.B[v, f].ub = 0
+                print('Pruned nodes ' + str(list(self.unreachable['tree'].keys())))
 
         # feature used once
         if 'single_use' in self.modelextras:
@@ -548,7 +546,7 @@ class OBCT:
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
 
-        # number of branching nodes
+        # exact number of branching nodes
         if any((match := elem).startswith('num_features') for elem in self.modelextras):
             self.max_features = int(re.sub("[^0-9]", "", match))
             print(str(self.max_features)+' feature(s) used')
