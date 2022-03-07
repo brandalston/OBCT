@@ -28,14 +28,15 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 
 - Ensure the latest versions of the packages in `requirements.txt` are installed
 - For an instance of `OBCT` run the `main` function in `model_runs.py` with the following arguments
-    - d : `str list`, names of dataset files
-    - h : `int list`, maximum depth of trained trees
+    - d : `str list`, name(s) of dataset file(s)
+    - h : `int list`, maximum depth(s) of trained tree(s)
     - t : `float`, gurobi model time limit in s
-    - m : `str list`, models to use
-    - r : `int`, number of repeat trees to generate for each model
-    - e : `str list`, model extras, if applicable
+    - m : `str list`, list of model(s) to use
+    - r : `int list`, list of random state(s) to use
+    - e : `str list`, model extra(s), if applicable
     - c : `str`, tuning parameter
     - f : `str`, results output file `.csv`
+    - p : `boolean`, generate `.png` figures of each assigned decision tree in user function call
 
 You can call the `model_runs.py` main function within a python file as follows,
 
@@ -46,18 +47,19 @@ heights = [2,3,4,5]
 models = ['MCF1','MCF2','CUT1','CUT2']
 time_limit = 3600
 extras = ['fixing','max_features-15']
-repeats = 5
+rand_states = [138, 15, 89, 42, 0]
 tuning = None
 file = 'results.csv'
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",repeats,"-c", tuning,"-f",file])
+plot_fig = False
+model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-p",plot_fig])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features_15'] -r 5 -c None -f 'results.csv'
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -p False
 ```
 Note:
-- We assume the target column is labeled `'target'`. Change the code in `model_runs.py` to change the label column
+- We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
 - If results output file `-f file` is `None` the `models_run.py` automatically generates a `.csv` results file with the parameters of the function call as the file name
 - `-e model_extras`, `-c tuning`, and `-f file` may be `None` input arguments, all others must hold a valid value
 
@@ -70,11 +72,16 @@ To generate the Pareto frontier call the `main` function in `pareto_runs.py` wit
   - m : str list, models to use
   - f : str, results output file .csv
 
+A `.png` file for each dataset called by the user is generated and stored in `\results_figures\` folder
+
+We assume `-f file` is located in the `\results_files` folder
+- If results output file `-f file` is `None` the `pareto_runs.py` automatically generates a `.csv` results file with the parameters of the function call as the file name
+
 You can generate pareto frontiers from within a python file as follows,
 ```python
 import pareto_runs
 height = 5
-models = ['AGHA','MCF1','MCF2','CUT1','CUT2']
+models = ['MCF1','MCF2','CUT1','CUT2']
 repeats = 5
 data_names = ['house-votes-84_enc']
 file = 'pareto.csv'
@@ -85,7 +92,6 @@ To run from terminal do the following
 ```bash
 python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -f 'pareto.csv'
 ```
-A `.png` file for each dataset called by the user is generated and stored in `\results_figures\` folder
 ***
 
 ## Models Functionality
