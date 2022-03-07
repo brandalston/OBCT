@@ -72,12 +72,12 @@ def warm_start(opt_model, warm_start_values):
     # Dataset Warm Start Values
     # For each datapoint
     #    Find terminal node and check if datapoint is correctly assigned at node
-    #       If yes, s_i,n = 1, for AGHA generate flow and ancestor receive flow
-    #       If no, s_i,n = 0, for AGHA no flow generated and ancestor receives no flow
+    #       If yes, s_i,n = 1
+    #       If no, s_i,n = 0
     #       otherwise s_i,n = 0
-    #   For non AGHA Models also activate correct source-terminal nodes for Q
-    #       If node in source-terminal path of datapoint
-    #       q_i,n: start = 1, otherwise = 0
+    #   Activate correct source-terminal path nodes for Q
+    #       If node in source-terminal path of datapoint, q_i,n: start = 1
+    #       otherwise, q_i,n = 0
     if warm_start_values['data']:
         for i in opt_model.datapoints:
             for n in opt_model.tree.B + opt_model.tree.L:
@@ -179,7 +179,7 @@ def int2(model, where):
 
 def int3(model, where):
     # Add the most violating INT cut in 1,v path of datapoint terminal node
-    # If more than one most violating cut exists, add the one closest to the root
+    # If more than one most violating cut exists, add the one closest to the root of DT
     if where == GRB.Callback.MIPSOL:
         start = time.perf_counter()
         model._numcb += 1
@@ -214,6 +214,7 @@ def frac1(model, where):
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         start = time.perf_counter()
         if model._rootnode:
+            # Only add cuts at root-node of branch and bound tree
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)
@@ -244,6 +245,7 @@ def frac2(model, where):
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         start = time.perf_counter()
         if model._rootnode:
+            # Only add cuts at root-node of branch and bound tree
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)
@@ -273,10 +275,11 @@ def frac2(model, where):
 
 def frac3(model, where):
     # Add most violating FRAC cut in 1,v path of datapoint terminal node in branch and bound tree
-    # If more than one most violating cut exists add the one closest to the root
+    # If more than one most violating cut exists add the one closest to the root of DT
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):
         start = time.perf_counter()
         if model._rootnode:
+            # Only add cuts at root-node of branch and bound tree
             if model.cbGet(GRB.Callback.MIPNODE_NODCNT) != 0: return
         model._numcb += 1
         q_val = model.cbGetNodeRel(model._Q)

@@ -77,9 +77,9 @@ def model_acc(tree, target, data):
     #   start at root
     #   while unassigned to class
     #   if current node is branching
-    #      yes: branch left or right
-    #      new current node = child
-    #   if current node is class
+    #      branch left or right
+    #      new current node = according child
+    #   elif current node is class
     #      assign datapoint to class
     #      check if correctly assigned
     for i in data.index:

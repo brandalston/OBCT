@@ -124,7 +124,7 @@ class OBCT:
     def formulation(self):
         '''
         Formulation of MIP model with connectivity constraints according to model type chosen by user
-        returns model
+        returns gurobi model
         '''
 
         # Branching vertex vars
@@ -169,6 +169,7 @@ class OBCT:
             self.model.addConstrs(self.S[i, v] <= self.W[v, self.data.at[i, self.target]]
                                   for i in self.datapoints)
 
+        # MCF1 Model Connectivity Constraints
         if 'MCF1' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS, lb=0, name='Z')
@@ -218,6 +219,7 @@ class OBCT:
                             self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
                             for i in self.datapoints)
 
+        # MCF2 Model Connectivity Constraints
         if 'MCF2' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.B + self.tree.L, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS,
@@ -274,6 +276,7 @@ class OBCT:
                             self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
                             for i in self.datapoints)
 
+        # CUT1 Model Connectivity Constraints
         if 'CUT1' in self.modeltype:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.B + self.tree.L, vtype=GRB.BINARY, name='Q')
@@ -349,6 +352,7 @@ class OBCT:
                 self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.B + self.tree.L) <= 1
                                       for i in self.datapoints)
 
+        # CUT2 Model Connectivity Constraints
         if 'CUT2' in self.modeltype:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.B + self.tree.L, vtype=GRB.BINARY, name='Q')
@@ -427,6 +431,7 @@ class OBCT:
                 # each datapoint has at most one terminal vertex
                 self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.B + self.tree.L) <= 1 for i in self.datapoints)
 
+        # AGHA Model Connectivity Constraints
         if 'AGHA' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS, lb=0, name='Z')
