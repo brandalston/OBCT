@@ -111,10 +111,9 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, fig_file)
         results_writer.writerow(
             [opt_model.dataname, tree.height, len(opt_model.datapoints),
              test_acc / len(test_set), train_acc / len(opt_model.datapoints), opt_model.model.Runtime,
-             opt_model.model.MIPGap, opt_model.model.ObjVal,
+             opt_model.model.MIPGap, opt_model.model.ObjVal, opt_model.model.ObjBound, opt_model.modeltype,
              opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
              opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
-             opt_model.modeltype,
              opt_model.time_limit, rand_state, opt_model.fixed, opt_model.warmstart, opt_model.cc,
              opt_model.single_use, opt_model.level_tree, opt_model.max_features, opt_model.super_feature])
         results.close()
@@ -159,9 +158,9 @@ def pareto_plot(data):
                  p(data.loc[data['Model'] == model]['Max Features']),
                  color=colors[model], alpha=0.5)
         axs.legend(loc='lower right')
-        axs.set_xlabel('Num. Branching Features')
+        axs.set_xlabel('Num. Branching Vertices')
         axs.xaxis.set_ticks(np.arange(1, max(data['Max Features'].unique())+1, 5))
-        axs.set_ylabel('Out-Acc. (%)')
+        axs.set_ylabel('Out-of-Sample Acc. (%)')
         name = name.replace('_enc','')
         axs.set_title(f'{str(name)} Pareto Frontier')
     plt.savefig(os.getcwd() + '/results_figures/' + str(name) + ' H: '+ str(height)+' Pareto Frontier.png', dpi=300)

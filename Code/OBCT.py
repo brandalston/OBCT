@@ -486,7 +486,7 @@ class OBCT:
         if 'conflict_constraints' in self.modelextras:
             self.cc = True
             print('Adding conflict constraints')
-            conflict_constraints = self.model.addConstrs(self.model.Q[i, v] + self.model.B[self.tree.direct_ancestor[v], f] <= 1
+            conflict_constraints = self.model.addConstrs(self.Q[i, v] + self.B[self.tree.direct_ancestor[v], f] <= 1
                                                          for i in self.datapoints
                                                          for v in self.tree.B + self.tree.L if v != 0
                                                          for f in self.features if self.data.at[i, f] == (v % 2))
