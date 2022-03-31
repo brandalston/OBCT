@@ -496,6 +496,7 @@ class OBCT:
                     for f in self.features:
                         if self.data.at[i, f] == (v % 2): conflict_constraints[i, v, f].lazy = 3
 
+        '''
         # fixing DV of unreachable nodes
         if 'fixing' in self.modelextras:
             self.fixing = True
@@ -522,6 +523,7 @@ class OBCT:
                     self.P[v].ub = 0
                     for f in self.features: self.B[v, f].ub = 0
                 print('Pruned nodes ' + str(list(self.unreachable['tree'].keys())))
+        '''
 
         # feature used once
         if 'single_use' in self.modelextras:

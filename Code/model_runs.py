@@ -5,8 +5,8 @@ import pandas as pd
 import getopt
 import sys
 import csv
-from os.path import exists
 from sklearn.model_selection import train_test_split
+from sklearn import tree as HEURTree
 from OBCT import OBCT
 from TREE import TREE
 import UTILS as OU
@@ -103,7 +103,7 @@ def main(argv):
                     if 'fixing' in model_extras:
                         unreachable = OSP.fixing(TREE(h), model_set)
                 for modeltype in modeltypes:
-                    if 'OCT' not in modeltype:
+                    if any([char.isdigit() for char in modeltype]):
                         # Calibrate number of maximum branching nodes using pareto frontier and warm starts
                         # Use a 25% calibration set for process
                         if 'calibration' == tuning:
@@ -167,7 +167,7 @@ def main(argv):
                             consol_log_file = output_path+'_'+str(file)+'_'+str(h)+'_'+str(modeltype)+'_'+'T:'+str(
                                               time_limit)+'_'+str(model_extras)+'.txt'
                             sys.stdout = OU.consol_log(consol_log_file)
-                    else:
+                    elif 'OCT' in modeltype:
                         OCT_tree = FlowOCTTree(d=h)
                         # FlowOCT model
                         if 'Flow' in modeltype:
@@ -221,6 +221,42 @@ def main(argv):
                                      test_acc, train_acc, master.model.Runtime,
                                      master.model.MIPGap, master.model.ObjBound, master.model.ObjVal, modeltype,
                                      0, 0, 0, 0, 0, 0, 0, time_limit, i,
+                                     0, False, False, False, 'None', 'None', False])
+                                results.close()
+                    elif 'CART' in modeltype:
+                        X_train, Y_train = model_set.drop('target', axis=1), model_set['target']
+                        X_test, Y_test = test_set.drop('target', axis=1), test_set['target']
+                        # HEURISTIC
+                        if 'FULL' in modeltype:
+                            print('Model: CART (Full Tree)')
+                            start = time.time()
+                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini')
+                            cart_full_tree.fit(X_train, Y_train)
+                            cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
+                            cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
+                            cart_full_time = (time.time() - start)
+                            with open(out_file, mode='a') as results:
+                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
+                                results_writer.writerow(
+                                    [file.replace('.csv', ''), h, len(model_set),
+                                     cart_full_test_acc, cart_full_train_acc, cart_full_time,
+                                     'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
+                                     0, False, False, False, 'None', 'None', False])
+                                results.close()
+                        elif 'STR' in modeltype:
+                            print('Model: CART (Structured Tree)')
+                            start = time.time()
+                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
+                            cart_full_tree.fit(X_train, Y_train)
+                            cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
+                            cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
+                            cart_full_time = (time.time() - start)
+                            with open(out_file, mode='a') as results:
+                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
+                                results_writer.writerow(
+                                    [file.replace('.csv', ''), h, len(model_set),
+                                     cart_full_test_acc, cart_full_train_acc, cart_full_time,
+                                     'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
 
