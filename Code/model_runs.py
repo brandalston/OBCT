@@ -227,10 +227,10 @@ def main(argv):
                         X_train, Y_train = model_set.drop('target', axis=1), model_set['target']
                         X_test, Y_test = test_set.drop('target', axis=1), test_set['target']
                         # HEURISTIC
-                        if 'FULL' in modeltype:
-                            print('Model: CART (Full Tree)')
+                        if 'STR' in modeltype:
+                            print('Model: CART (Structured Tree)')
                             start = time.time()
-                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini')
+                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
                             cart_full_tree.fit(X_train, Y_train)
                             cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
                             cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
@@ -243,10 +243,10 @@ def main(argv):
                                      'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
-                        elif 'STR' in modeltype:
-                            print('Model: CART (Structured Tree)')
+                        else:
+                            print('Model: CART (Full Tree)')
                             start = time.time()
-                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
+                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini')
                             cart_full_tree.fit(X_train, Y_train)
                             cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
                             cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
