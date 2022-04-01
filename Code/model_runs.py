@@ -224,21 +224,28 @@ def main(argv):
                                      0, False, False, False, 'None', 'None', False])
                                 results.close()
                     elif 'CART' in modeltype:
-                        X_train, Y_train = model_set.drop('target', axis=1), model_set['target']
-                        X_test, Y_test = test_set.drop('target', axis=1), test_set['target']
+                        if '_enc' in file:
+                            cart_data, encoding_map = OU.get_data(file.replace('_enc', ''), target)
+                        else: cart_data = data
+                        print(cart_data)
+                        cart_train_set, cart_test_set = train_test_split(cart_data, train_size=0.5, random_state=i)
+                        cart_cal_set, cart_test_set = train_test_split(cart_test_set, train_size=0.5, random_state=i)
+                        cart_model_set = pd.concat([cart_train_set, cart_cal_set])
+                        cart_X_train, cart_Y_train = cart_model_set.drop('target', axis=1), cart_model_set['target']
+                        cart_X_test, cart_Y_test = test_set.drop('target', axis=1), test_set['target']
                         # HEURISTIC
                         if 'STR' in modeltype:
                             print('Model: CART (Structured Tree)')
                             start = time.time()
                             cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
-                            cart_full_tree.fit(X_train, Y_train)
-                            cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
-                            cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
+                            cart_full_tree.fit(cart_X_train, cart_Y_train)
+                            cart_full_train_acc = cart_full_tree.score(cart_X_train, cart_Y_train)
+                            cart_full_test_acc = cart_full_tree.score(cart_X_test, cart_Y_test)
                             cart_full_time = (time.time() - start)
                             with open(out_file, mode='a') as results:
                                 results_writer = csv.writer(results, delimiter=',', quotechar='"')
                                 results_writer.writerow(
-                                    [file.replace('.csv', ''), h, len(model_set),
+                                    [file.replace('.csv', ''), h, len(cart_model_set),
                                      cart_full_test_acc, cart_full_train_acc, cart_full_time,
                                      'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
                                      0, False, False, False, 'None', 'None', False])
@@ -247,9 +254,9 @@ def main(argv):
                             print('Model: CART (Full Tree)')
                             start = time.time()
                             cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini')
-                            cart_full_tree.fit(X_train, Y_train)
-                            cart_full_train_acc = cart_full_tree.score(X_train, Y_train)
-                            cart_full_test_acc = cart_full_tree.score(X_test, Y_test)
+                            cart_full_tree.fit(cart_X_train, cart_Y_train)
+                            cart_full_train_acc = cart_full_tree.score(cart_X_train, cart_Y_train)
+                            cart_full_test_acc = cart_full_tree.score(cart_X_test, cart_Y_test)
                             cart_full_time = (time.time() - start)
                             with open(out_file, mode='a') as results:
                                 results_writer = csv.writer(results, delimiter=',', quotechar='"')
