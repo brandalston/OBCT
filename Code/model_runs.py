@@ -226,6 +226,7 @@ def main(argv):
                     elif 'CART' in modeltype:
                         if '_enc' in file:
                             file.replace('_enc', '')
+                            print(file)
                             cart_data, encoding_map = OU.get_data(file.replace('.csv', ''), target)
                         else: cart_data = data
                         cart_train_set, cart_test_set = train_test_split(cart_data, train_size=0.5, random_state=i)
@@ -236,36 +237,23 @@ def main(argv):
                         # HEURISTIC
                         if 'STR' in modeltype:
                             print('Model: CART (Structured Tree)')
-                            start = time.time()
-                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
-                            cart_full_tree.fit(cart_X_train, cart_Y_train)
-                            cart_full_train_acc = cart_full_tree.score(cart_X_train, cart_Y_train)
-                            cart_full_test_acc = cart_full_tree.score(cart_X_test, cart_Y_test)
-                            cart_full_time = (time.time() - start)
-                            with open(out_file, mode='a') as results:
-                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
-                                results_writer.writerow(
-                                    [file.replace('.csv', ''), h, len(cart_model_set),
-                                     cart_full_test_acc, cart_full_train_acc, cart_full_time,
-                                     'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
-                                     0, False, False, False, 'None', 'None', False])
-                                results.close()
+                            cart_tree = HEURTree.DecisionTreeClassifier(criterion='gini', max_depth=h)
                         else:
-                            print('Model: CART (Full Tree)')
-                            start = time.time()
-                            cart_full_tree = HEURTree.DecisionTreeClassifier(criterion='gini')
-                            cart_full_tree.fit(cart_X_train, cart_Y_train)
-                            cart_full_train_acc = cart_full_tree.score(cart_X_train, cart_Y_train)
-                            cart_full_test_acc = cart_full_tree.score(cart_X_test, cart_Y_test)
-                            cart_full_time = (time.time() - start)
-                            with open(out_file, mode='a') as results:
-                                results_writer = csv.writer(results, delimiter=',', quotechar='"')
-                                results_writer.writerow(
-                                    [file.replace('.csv', ''), h, len(model_set),
-                                     cart_full_test_acc, cart_full_train_acc, cart_full_time,
-                                     'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
-                                     0, False, False, False, 'None', 'None', False])
-                                results.close()
+                            cart_tree = HEURTree.DecisionTreeClassifier(criterion='gini',max_depth=h,
+                                                                        max_leaf_nodes=2**h, max_features=1)
+                        start = time.time()
+                        cart_tree.fit(cart_X_train, cart_Y_train)
+                        cart_full_train_acc = cart_tree.score(cart_X_train, cart_Y_train)
+                        cart_full_test_acc = cart_tree.score(cart_X_test, cart_Y_test)
+                        cart_full_time = (time.time() - start)
+                        with open(out_file, mode='a') as results:
+                            results_writer = csv.writer(results, delimiter=',', quotechar='"')
+                            results_writer.writerow(
+                                [file.replace('.csv', ''), h, len(cart_model_set),
+                                 cart_full_test_acc, cart_full_train_acc, cart_full_time,
+                                 'None', 'None', 'None', modeltype, 0, 0, 0, 0, 0, 0, 0, time_limit, i,
+                                 0, False, False, False, 'None', 'None', False])
+                            results.close()
 
 
 if __name__ == "__main__":
