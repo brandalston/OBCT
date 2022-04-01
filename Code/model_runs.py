@@ -225,9 +225,9 @@ def main(argv):
                                 results.close()
                     elif 'CART' in modeltype:
                         if '_enc' in file:
-                            cart_data, encoding_map = OU.get_data(file.replace('_enc', ''), target)
+                            file.replace('_enc', '')
+                            cart_data, encoding_map = OU.get_data(file.replace('.csv', ''), target)
                         else: cart_data = data
-                        print(cart_data)
                         cart_train_set, cart_test_set = train_test_split(cart_data, train_size=0.5, random_state=i)
                         cart_cal_set, cart_test_set = train_test_split(cart_test_set, train_size=0.5, random_state=i)
                         cart_model_set = pd.concat([cart_train_set, cart_cal_set])

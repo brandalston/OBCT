@@ -4,7 +4,7 @@ import pareto_runs
 # '''
 # MODEL RUN EXAMPLE
 data_names = ['soybean-small_enc','monk3_enc','breast-cancer_enc','tic-tac-toe_enc']
-heights = [2]
+heights = [2,3,4,5]
 models = ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC1','FlowOCT','BendersOCT','CART']
 time_limit = 3600
 extras = ['max_features-25']
@@ -13,12 +13,19 @@ tuning = None
 file = 'results.csv'
 plot_fig = False
 consol_log = False
-data_names = ['soybean-small','soybean-small_enc']
-models = ['CART']
+models = ['CART','CART_STR']
+data_names = ['soybean-small','soybean-small_enc','monk3','monk3_enc','monk1','monk1_enc']
 model_runs.main(
     ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit, "-e", extras, "-r", rand_states, "-c", tuning,
      "-f", file, "-p", plot_fig, "-l", consol_log])
-
+data_names = ['hayes-roth','hayes-roth_enc','monk2','monk2_enc','house-votes-84','house-votes-84_enc']
+model_runs.main(
+    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit, "-e", extras, "-r", rand_states, "-c", tuning,
+     "-f", file, "-p", plot_fig, "-l", consol_log])
+data_names = ['spect','spect_enc','breast-cancer','breast-cancer_enc','balance-scale-84','balance-scale_enc']
+model_runs.main(
+    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit, "-e", extras, "-r", rand_states, "-c", tuning,
+     "-f", file, "-p", plot_fig, "-l", consol_log])
 '''
 # PARETO FRONTIER EXAMPLE
 height = 5
