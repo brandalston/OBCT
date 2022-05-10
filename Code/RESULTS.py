@@ -14,7 +14,7 @@ def dv_results(model, tree, features, classes, datapoints):
         for k in classes:
             if model._W[v, k].x > 0.5:
                 print('vertex '+str(v)+' assigned class '+str(k))
-        if model._P[v].x < .5 and 1.0 not in [model._B[v, f].x for f in features]:
+        if model._P[v].x < .5 and all(elem < .5 for elem in [model._B[v, f].x for f in features]):
             print('vertex '+str(v)+' pruned')
 
     # Print datapoint paths through tree
