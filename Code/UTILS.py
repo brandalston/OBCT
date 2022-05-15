@@ -18,7 +18,6 @@ def get_data(name, target):
             return data, encoding_map
         else:
             data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
-            print('trying to print data\n')
             return data, {}
     except:
         print("Dataset Not Found or Error in Encoding Process!")
