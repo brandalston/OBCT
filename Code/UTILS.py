@@ -13,7 +13,7 @@ def get_data(name, target):
     global data, encoding_map
     try:
         if '_enc' not in name:
-            data = pd.read_csv('Datasets/'+name+'.csv', na_values='?')
+            data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
             data, encoding_map = encode(data, target)
             return data, encoding_map
         else:
