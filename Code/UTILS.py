@@ -98,7 +98,7 @@ def encode(data, target, cont_bin_num=2):
     return new_data, encoding_map
 
 
-def random_tree(target, data, tree, repeats=100, threshold=0):
+def random_tree(target, data, tree, threshold=0):
     # Generate best randomly assigned height 'h' tree for dataset 'data'
     # Threshold is (0,1) float for 'best features' to use in random trees
     # generate 'repeats' # of trees
@@ -113,7 +113,7 @@ def random_tree(target, data, tree, repeats=100, threshold=0):
     # generate random trees and store best accuracy tree
     level_start = time.perf_counter()
     level_acc, best_l_tree, level_data = -1, {}, {}
-    for i in range(repeats):
+    for i in range(100):
         # randomly assign features to base tree
         l_tree = level_tree(tree, selected_features, classes)
         # generate acc results
@@ -127,7 +127,7 @@ def random_tree(target, data, tree, repeats=100, threshold=0):
 
     path_start = time.perf_counter()
     path_acc, best_p_tree, path_data = -1, {}, {}
-    for i in range(repeats):
+    for i in range(100):
         # randomly assign features to base tree
         p_tree = path_tree(tree, selected_features, classes, tree.path, tree.child)
         # generate acc results
@@ -141,9 +141,9 @@ def random_tree(target, data, tree, repeats=100, threshold=0):
 
     # store and return best tree assignment and data results in dictionary for warm start
     if level_acc > path_acc:
-        WSV = {'tree': best_l_tree.DG_prime.nodes(data=True), 'data': level_data, 'acc': level_acc, 'time': level_time}
+        WSV = {'tree': best_l_tree.DG_prime, 'data': level_data, 'acc': level_acc/len(data), 'time': level_time}
     else:
-        WSV = {'tree': best_p_tree.DG_prime.nodes(data=True), 'data': path_data, 'acc': path_acc, 'time': path_time}
+        WSV = {'tree': best_p_tree.DG_prime, 'data': path_data, 'acc': path_acc/len(data), 'time': path_time}
     return WSV
 
 

@@ -25,11 +25,12 @@ class TREE():
                 self.B.append(node)
             else:
                 print("Error: tree must not have isolated vertices!")
+        self.V = self.B + self.L
 
         self.path = nx.single_source_shortest_path(self.DG_prime, 0)
         self.child = {n: list(nx.descendants(self.DG_prime, n)) for n in self.DG_prime.nodes}
         self.RC = [n for n in self.DG_prime.nodes if n % 2 == 0 and n != 0]
-        self.LC = [n for n in self.DG_prime.nodes if n % 2 == 1 and n != 0]
+        self.LC = [n for n in self.DG_prime.nodes if 0 != n % 2 == 1]
 
         self.depth = nx.shortest_path_length(self.DG_prime, 0)
         self.levels = list(range(h + 1))

@@ -33,67 +33,6 @@ def fixing(tree, data):
             'tree': {key: val for key, val in node_unreachable.items() if val == len(data.index)}}
 
 
-def warm_start(opt_model, warm_start_values):
-    # Tree Assignment Warm Start Values
-    # For each node in the warm start tree
-    #    If branching node
-    #      start value of branching feature = 1
-    #      all other features and classes = 0
-    #      pruned activation = 0
-    #    If classification node
-    #       start value of class = 1
-    #       all other features and classes = 0
-    #       pruned activation = 1
-    #    If pruned node
-    #       all classes and features = 0
-    #       pruned activation = 0
-    for n in opt_model.tree.B + opt_model.tree.L:
-        if 'branch on feature' in warm_start_values['tree'][n]:
-            for f in opt_model.features:
-                if f == warm_start_values['tree'][n]['branch on feature']:
-                    opt_model.B[n, f].start = 1.0
-                else:
-                    opt_model.B[n, f].start = 0.0
-            for k in opt_model.classes: opt_model.W[n, k].start = 0.0
-            opt_model.P[n].start = 0.0
-        elif 'class' in warm_start_values['tree'][n]:
-            for k in opt_model.classes:
-                if k == warm_start_values['tree'][n]['class']:
-                    opt_model.W[n, k].start = 1.0
-                else:
-                    opt_model.W[n, k].start = 0.0
-            for f in opt_model.features: opt_model.B[n, f].start = 0.0
-            opt_model.P[n].start = 1.0
-        elif 'pruned' in warm_start_values['tree'][n]:
-            opt_model.P[n].start = 0.0
-            for k in opt_model.classes: opt_model.W[n, k].start = 0.0
-            for f in opt_model.features: opt_model.B[n, f].start = 0.0
-
-    # Dataset Warm Start Values
-    # For each datapoint
-    #    Find terminal node and check if datapoint is correctly assigned at node
-    #       If yes, s_i,n = 1
-    #       If no, s_i,n = 0
-    #       otherwise s_i,n = 0
-    #   Activate correct source-terminal path nodes for Q
-    #       If node in source-terminal path of datapoint, q_i,n: start = 1
-    #       otherwise, q_i,n = 0
-    if warm_start_values['data']:
-        for i in opt_model.datapoints:
-            for n in opt_model.tree.B + opt_model.tree.L:
-                if n == warm_start_values['data'][i][2][-1] and 'correct' in warm_start_values['data'][i]:
-                    opt_model.S[i, n].start = 1.0
-                elif n == warm_start_values['data'][i][2][-1]:
-                    opt_model.S[i, n].start = 0.0
-                else:
-                    opt_model.S[i, n].start = 0.0
-                if n in warm_start_values['data'][i][2]:
-                    opt_model.Q[i, n].start = 1.0
-                else:
-                    opt_model.Q[i, n].start = 0.0
-    return opt_model
-
-
 def conflict(model, where):
     if where == GRB.Callback.MIPSOL:
         q_val = {key: item for key, item in model.cbGetSolution(model._Q).items() if item > .5}
