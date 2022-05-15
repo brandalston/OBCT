@@ -1,1 +1,2 @@
 Data,H,|I|,Out-Acc,In-Acc,Sol-Time,Gap,ObjVal,ObjBound,Model,# CB,User Cuts,Cuts/CB,CB-Time,INT-CB-time,FRAC-CB-TIME,CB-Eps,Time Limit,Rand. State,% Fixed,Calibration,CC,Single Feature Use,Level Tree,Max Features,Super Feature,
+monk1_enc,4,93,1.0,1.0,3.593291997909546,0.0,93.0,93.0,MCF1,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False

@@ -17,7 +17,7 @@ def get_data(name, target):
             data, encoding_map = encode(data, target)
             return data, encoding_map
         else:
-            data = pd.read_csv('Datasets/'+name+'.csv', na_values='?')
+            data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
             print('trying to print data\n')
             return data, {}
     except:

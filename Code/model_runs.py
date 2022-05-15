@@ -65,8 +65,8 @@ def main(argv):
                        'Num_CB', 'User_Cuts', 'Cuts_per_CB', 'Total_CB_Time', 'INT_CB_Time', 'FRAC_CB_Time', 'CB_Eps',
                        'Time_Limit', 'Rand_State', '%_Fixed', 'Calibration', 'CC',
                        'Single_Feature_Use', 'Level_Tree', 'Max_Features', 'Super_Feature']
-    output_path = os.getcwd() + '/results_files/'
-    fig_path = os.getcwd() + '/results_figures/'
+    output_path = os.getcwd() + '/Code/results_files/'
+    fig_path = os.getcwd() + '/Code/results_figures/'
 
     if file_out is None:
         output_name = str(data_files) + '_H:' + str(heights) + '_' + str(modeltypes) + \
