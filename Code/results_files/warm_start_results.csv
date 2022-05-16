@@ -1,1 +1,9 @@
 Data,H,|I|,Out-Acc,In-Acc,Sol-Time,Gap,ObjVal,ObjBound,Model,# CB,User Cuts,Cuts/CB,CB-Time,INT-CB-time,FRAC-CB-TIME,CB-Eps,Time Limit,Rand. State,% Fixed,Warm Start,CC,Single Feature Use,Level Tree,Max Features,Super Feature,
+monk1_enc,4,93,1.0,1.0,3.6047630310058594,0.0,93.0,93.0,MCF1,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,3.679698944091797,0.0,93.0,93.0,MCF1,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,11.395675897598267,0.0,93.0,93.0,MCF2,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,6.954567909240723,0.0,93.0,93.0,CUT1,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,11.419863939285278,0.0,93.0,93.0,MCF2,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,7.0225701332092285,0.0,93.0,93.0,CUT2,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,6.881558179855347,0.0,93.0,93.0,CUT1,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
+monk1_enc,4,93,1.0,1.0,6.7649641036987305,0.0,93.0,93.0,CUT2,0,0,0,0,0,0,0,3600,138,0,True,False,False,None,None,False
