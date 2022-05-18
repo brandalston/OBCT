@@ -2,7 +2,7 @@ import model_runs
 import pareto_runs
 
 time_limit = 3600
-rand_states = [138, 15, 89, 42, 0]
+rand_states = [138]
 file = 'warm_start_results.csv'
 heights = [3,4,5]
 data_names = ['fico_binary_enc']
