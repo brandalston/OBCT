@@ -20,11 +20,11 @@ model_runs.main(
      "-f", file, "-p", plot_fig, "-l", consol_log])
 '''
 time_limit = 3600
-rand_states = [138]
+rand_states = [138, 15, 89, 42, 0]
 file = 'warm_start_results.csv'
-heights = [4]
-data_names = ['monk1_enc']
-models = ['MCF1','MCF2','CUT1','CUT2']
+heights = [5]
+data_names = ['fico_binary_enc']
+models = ['MCF2']
 extras = None
 tuning = 'warm_start'
 model_runs.main(
