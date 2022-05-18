@@ -5,8 +5,8 @@ time_limit = 3600
 rand_states = [138, 15, 89, 42, 0]
 file = 'warm_start_results.csv'
 heights = [3,4,5]
-data_names = ['tic-tac-toe_enc','car_evaluation_enc']
-models = ['MCF1']
+data_names = ['fico_binary_enc']
+models = ['MCF2']
 extras = None
 tuning = 'warm_start'
 model_runs.main(
