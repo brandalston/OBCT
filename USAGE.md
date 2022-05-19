@@ -38,30 +38,20 @@ We also control integer and fractional separation using gurobi callback. To invo
 ***
 ## Model Extras
 To invoke the `-e model_extras` parameter use the following guide. Each choice used should be a `str` placed in a `list` named `model_extras`
-- ex. `model_extras = ['fixing','max_features-23','single use']`
-- Fixing DV based on datapoint unreachable nodes
-    - `'fixing'`
+- ex. `model_extras = ['max_features-23','single use','num_features-12]`
 - No more than `k` features used in the DT
   - `'max_features-k'`
 - Exactly `k` features used in the DT
   - `'num_features-k'`
-- Conflict contraints
-  - `'conflict_constraints'`
 - Each future used once in DT
   - `'single_use'`
-- Super feature relationship in parent, child branching vertices
-  - `'super_feature'`
 
 Note: `model_extras` are not applicable to models: **AGHA**, **FlowOCT**, **BendersOCT**
 
 ***
 ## Tuning and Warm Starting
-- The `-c tuning` parameter is meant for warm starting the model for solution time and out-of-sample accuracy
-  - ex.`-c 'calibration'` or `-c 'warm_start'`
-  - Only one can be specified between `'calibration'` and `'warm_start'`
-- `'warm_start'`
-  - Warm start model using randomly assigned tree and 25% calibration + 50% training set
-- `'calibration'`
+The `-c tuning` parameter is meant for calibrating the number of features used
+  - ex.`-c 'calibration'`
   - Uses the second objective function as a constraint for calibrating the number of totla branching features
   - Use a 25% calibration set for calibrating `max_features_k*` parameter
   - Each `max_features_k-1` DT is used as a warm for the `max_features_k` DT

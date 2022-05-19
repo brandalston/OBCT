@@ -12,12 +12,13 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
   - `OBCT.py` contains the formulations of each model for solving using Gurobi9.x
   - `TREE.py` creates the necessary tree information including path, child, and other information
   - `SPEED_UP.py` contains the code for the callbacks used in user fractional separation procedures
-  - `RESULTS.py` contains the code for viewing model decision variable results and generating the .csv results files among other model results
+  - `UTILS.py` contains the code for viewing model decision variable results and generating the .csv results files among other utility functions
   - `model_runs.py` contains the code necessary to create, solve, and report results in a `.csv` file of each instance called by the user
   - `pareto_runs.py` contains the code necessary to create a pareto frontier `.png` file of instances called by the user
 
 - `results_files/` folder stores the generated `.csv` files with model metrics
 - `results_figures/` folder stores the generated `.png` files for experimental results
+- `log_files/` folder stores model `.lp` files and Gurobi `.txt` log files
 - `Datasets/` folder contains the datasets used for generating experimental results
   - Note: `Datasets/` should also be used as the folder where user dataset `.csv` files are stored
 
@@ -36,8 +37,7 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
     - e : `str list`, model extra(s), if applicable
     - c : `str`, tuning parameter
     - f : `str`, results output file `.csv`
-    - p : `boolean`, generate `.png` figures of each assigned decision tree in user function call
-    - l : `boolean`, log consol to `.txt` file saved to the `\results_files` folder for each model called by user
+    - l : `boolean`, log console to `.txt` file and write model to `.lp` file, both saved to the `\log_files` folder for each model called by user
 
 You can call the `model_runs.py` main function within a python file as follows,
 
@@ -47,18 +47,17 @@ data_names = ['monk1_enc','breast-cancer_enc']
 heights = [2,3,4,5]
 models = ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2']
 time_limit = 3600
-extras = ['fixing','max_features-15']
+extras = ['max_features-15']
 rand_states = [138, 15, 89, 42, 0, None]
 tuning = None
 file = 'results.csv'
-plot_fig = False
-consol_log = True
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-p",plot_fig,"-l", consol_log])
+log_files = True
+model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-l", log_files])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -p False -l True
+python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -l True
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
