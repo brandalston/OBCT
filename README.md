@@ -8,7 +8,7 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 ***
 
 ## Summary of Repository
-- `Code` contains the code of the formulations **MCF1**, **MCF2**, **CUT1**, **CUT2** and **AGHA**
+- `Code` contains the code of the formulations **MCF1**, **MCF2**, **CUT1**, and **CUT2**
   - `OBCT.py` contains the formulations of each model for solving using Gurobi9.x
   - `TREE.py` creates the necessary tree information including path, child, and other information
   - `SPEED_UP.py` contains the code for the callbacks used in user fractional separation procedures
