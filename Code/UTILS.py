@@ -1,225 +1,174 @@
 import numpy as np
 import pandas as pd
 import sys
-import time
-import random
-import RESULTS as OR
+import networkx as nx
+import csv
+import matplotlib.pyplot as plt
+import os
 
 
-def get_data(name, target):
+def get_data(name):
     # Return dataset from 'name' in Pandas dataframe
     # dataset located in workspace folder named 'Datasets'
     # Remove any non-numerical features from dataset
-    global data, encoding_map
+    global data
     try:
-        if '_enc' not in name:
-            data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
-            data, encoding_map = encode(data, target)
-            return data, encoding_map
-        else:
-            data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
-            return data, {}
+        data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
+        return data
     except:
         print("Dataset Not Found or Error in Encoding Process!")
     return
 
 
-def encode(data, target, cont_bin_num=2):
-    columns, data_types = data.columns[data.columns != target], data.dtypes
-    new_data_columns, encoding_map = [], {column: [None, [], []] for column in columns}
-    data.dropna(inplace=True)
-    data = data.reset_index(drop=True)
-    # data_name = name.replace('_enc', '')
-    sub_iter = 0
-    for column in columns:
-        if data_types[column] == int:
-            encoding_map[column][0] = data_types[column]
-            if len(data[column].unique()) == 2:
-                encoding_map[column][1] = list(data[column].unique())
-                encoding_map[column].append(sub_iter)
-                encoding_map[column][2].append(f'{column}')
-                new_data_columns.append(f'{column}')
-                sub_iter += 1
+def dv_results(model, tree, features, classes, datapoints):
+    # Print assigned features, classes, and pruned nodes of tree
+    for v in tree.DG_prime.nodes:
+        for f in features:
+            if model._B[v, f].x > .5:
+                print('vertex '+str(v)+' assigned feature '+str(f))
+        for k in classes:
+            if model._W[v, k].x > 0.5:
+                print('vertex '+str(v)+' assigned class '+str(k))
+        if model._P[v].x < .5 and all(elem < .5 for elem in [model._B[v, f].x for f in features]):
+            print('vertex '+str(v)+' pruned')
+
+    # Print datapoint paths through tree
+    for i in datapoints:
+        for v in tree.DG_prime.nodes:
+            if model._Q[i, v].x > 0.5:
+                print('datapoint '+str(i)+' use vertex '+str(v)+' in source-terminal path')
+            if model._S[i, v].x > 0.5:
+                print('datapoint '+str(i)+' terminal vertex '+str(v))
+
+
+def node_assign(model, tree):
+    # assign features, classes, and pruned nodes determined by model to tree
+    for i in model.B.keys():
+        if model.B[i].x > 0.5:
+            tree.DG_prime.nodes[i[0]]['branch on feature'] = i[1]
+            tree.DG_prime.nodes[i[0]]['color'] = 'green'
+    for i in model.W.keys():
+        if model.W[i].x > 0.5:
+            tree.DG_prime.nodes[i[0]]['class'] = i[1]
+            tree.DG_prime.nodes[i[0]]['color'] = 'yellow'
+    for i in model.P.keys():
+        if model.P[i].x < .5 and all(x < .5 for x in [model.B[i, f].x for f in model.features]):
+            tree.DG_prime.nodes[i]['pruned'] = 0
+            tree.DG_prime.nodes[i]['color'] = 'red'
+
+
+def tree_check(tree):
+    # check for each class node v
+    # all nodes n in ancestors of v are branching nodes
+    # all children c of v are pruned
+    class_nodes = {v: tree.DG_prime.nodes[v]['class']
+                   for v in tree.DG_prime.nodes if 'class' in tree.DG_prime.nodes[v]}
+    branch_nodes = {v: tree.DG_prime.nodes[v]['branch on feature']
+                    for v in tree.DG_prime.nodes if 'branch on feature' in tree.DG_prime.nodes[v]}
+    pruned_nodes = {v: tree.DG_prime.nodes[v]['pruned']
+                    for v in tree.DG_prime.nodes if 'pruned' in tree.DG_prime.nodes[v]}
+    for v in class_nodes.keys():
+        if not (all(n in branch_nodes.keys() for n in tree.path[v][:-1])):
+            return False
+        if not (all(c in pruned_nodes.keys() for c in tree.child[v])):
+            return False
+
+
+def model_acc(tree, target, data):
+    # get branching and class node and direct children of each node
+    branching_nodes = nx.get_node_attributes(tree.DG_prime, 'branch on feature')
+    class_nodes = nx.get_node_attributes(tree.DG_prime, 'class')
+    acc = 0
+    results = {i: [None, data.at[i, target], []] for i in data.index}
+    # for each datapoint
+    #   start at root
+    #   while unassigned to class
+    #   if current node is branching
+    #      branch left or right
+    #      new current node = according child
+    #   elif current node is class
+    #      assign datapoint to class
+    #      check if correctly assigned
+    for i in data.index:
+        current_node = 0
+        while results[i][0] is None:
+            results[i][2].append(current_node)
+            if current_node in branching_nodes and data.at[i, branching_nodes[current_node]] == 0:
+                current_node = tree.successor[current_node][0]
+            elif current_node in branching_nodes and data.at[i, branching_nodes[current_node]] == 1:
+                current_node = tree.successor[current_node][1]
+            elif current_node in class_nodes:
+                results[i][0] = class_nodes[current_node]
+                if class_nodes[current_node] == results[i][1]:
+                    acc += 1
+                    results[i].append('correct')
             else:
-                for item in data[column].unique():
-                    encoding_map[column][1].append(item)
-                    encoding_map[column][2].append(f'{column}.{item}')
-                    encoding_map[column].append(sub_iter)
-                    new_data_columns.append(f'{column}.{item}')
-                    sub_iter += 1
-        elif data_types[column] == float:
-            encoding_map[column][0] = data_types[column]
-            test_values = np.linspace(min(data[column]), max(data[column]), cont_bin_num + 1).tolist()
-            encoding_map[column][1] = list(zip(test_values, test_values[1:]))
-            for item in range(len(encoding_map[column][1])):
-                encoding_map[column][2].append(f'{column}.{item}')
-                encoding_map[column].append(sub_iter)
-                new_data_columns.append(f'{column}.{item}')
-                sub_iter += 1
-        elif data_types[column] == str or object:
-            encoding_map[column][0] = data_types[column]
-            if len(data[column].unique()) == 2:
-                encoding_map[column][1] = list(data[column].unique())
-                encoding_map[column][2].append(f'{column}')
-                encoding_map[column].append(sub_iter)
-                new_data_columns.append(f'{column}')
-                sub_iter += 1
-            else:
-                for item in data[column].unique():
-                    encoding_map[column][1].append(item)
-                    index = list(data[column].unique()).index(item)
-                    encoding_map[column][2].append(f'{column}.{index}')
-                    encoding_map[column].append(sub_iter)
-                    new_data_columns.append(f'{column}.{index}')
-                    sub_iter += 1
-    else:
-        new_data = pd.DataFrame(0, index=data.index, columns=new_data_columns)
-        for i in data.index:
-            for col in columns:
-                if encoding_map[col][0] == int:
-                    if len(data[col].unique()) == 2:
-                        if data.at[i, col] == data[col].unique()[0]: new_data.at[i, col] = 1
-                    else:
-                        for sub_value in encoding_map[col][1]:
-                            if data.at[i, col] == sub_value: new_data.at[i, f'{col}.{sub_value}'] = 1
-                elif encoding_map[col][0] == float:
-                    for pair in encoding_map[col][1]:
-                        if pair[0] <= data.at[i, col] <= pair[1]: new_data.at[
-                            i, f'{col}.{encoding_map[col][1].index(pair)}'] = 1
-                elif encoding_map[col][0] == str or object:
-                    if len(data[col].unique()) == 2:
-                        if data.at[i, col] == data[col].unique()[0]: new_data.at[i, col] = 1
-                    else:
-                        for item in encoding_map[col][1]:
-                            sub_col = list(data[col].unique()).index(item)
-                            if data.at[i, col] == item: new_data.at[i, f'{col}.{sub_col}'] = 1
-        encoding_map = {list(encoding_map.keys()).index(col): value for col, value in encoding_map.items()}
-        new_data['target'] = data.target
-    return new_data, encoding_map
+                results[i][0] = 'ERROR'
+    return acc, results
 
 
-def random_tree(target, data, tree, threshold=0):
-    # Generate best randomly assigned height 'h' tree for dataset 'data'
-    # Threshold is (0,1) float for 'best features' to use in random trees
-    # generate 'repeats' # of trees
-    # return best acc tree and data assignments for warm start
+def model_summary(opt_model, tree, test_set, rand_state, results_file):
+    # Log model results to .csv file and save .png if applicable
+    node_assign(opt_model, tree)
+    if tree_check(tree):
+        print('Invalid Tree!!')
+    test_acc, test_assignments = model_acc(tree=tree, target=opt_model.target, data=test_set)
+    train_acc, train_assignments = model_acc(tree=tree, target=opt_model.target, data=opt_model.data)
 
-    # select 'best features' and unique classes
-    features = data.columns[data.columns != target]
-    classes = data[target].unique()
-    selected_features = [feature for feature in features
-                         if data.loc[:, feature].sum() / len(data) >= threshold]
-
-    # generate random trees and store best accuracy tree
-    level_start = time.perf_counter()
-    level_acc, best_l_tree, level_data = -1, {}, {}
-    for i in range(100):
-        # randomly assign features to base tree
-        l_tree = level_tree(tree, selected_features, classes)
-        # generate acc results
-        acc, data_assignments = OR.model_acc(tree=l_tree, target=target, data=data)
-        if acc > level_acc:
-            level_acc = acc
-            best_l_tree = l_tree
-            level_data = data_assignments
-    level_time = time.perf_counter()-level_start
-    # print(f'Level Time: {round(level_time, 4)}s. Acc: {level_acc}')
-
-    path_start = time.perf_counter()
-    path_acc, best_p_tree, path_data = -1, {}, {}
-    for i in range(100):
-        # randomly assign features to base tree
-        p_tree = path_tree(tree, selected_features, classes, tree.path, tree.child)
-        # generate acc results
-        acc, data_assignments = OR.model_acc(tree=p_tree, target=target, data=data)
-        if acc > path_acc:
-            path_acc = acc
-            best_p_tree = p_tree
-            path_data = data_assignments
-    path_time = time.perf_counter()-path_start
-    # print(f'Path Time: {round(path_time, 4)}s. Acc: {path_acc}')
-
-    # store and return best tree assignment and data results in dictionary for warm start
-    if level_acc > path_acc:
-        WSV = {'tree': best_l_tree.DG_prime, 'data': level_data, 'acc': level_acc/len(data), 'time': level_time}
-    else:
-        WSV = {'tree': best_p_tree.DG_prime, 'data': path_data, 'acc': path_acc/len(data), 'time': path_time}
-    return WSV
+    with open(results_file, mode='a') as results:
+        results_writer = csv.writer(results, delimiter=',', quotechar='"')
+        results_writer.writerow(
+            [opt_model.dataname, tree.height, len(opt_model.datapoints),
+             test_acc / len(test_set), train_acc / len(opt_model.datapoints), opt_model.model.Runtime,
+             opt_model.model.MIPGap, opt_model.model.ObjVal, opt_model.model.ObjBound, opt_model.modeltype,
+             opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
+             opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
+             opt_model.time_limit, rand_state, opt_model.warmstart, opt_model.single_use, opt_model.max_features])
+        results.close()
 
 
-def level_tree(base_tree, feature_list, classes):
-    # clear any existing node assignments
-    for n in base_tree.DG_prime.nodes():
-        if 'class' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['class']
-        if 'branch on feature' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['branch on feature']
-        if 'pruned' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['pruned']
-    node_assignments = {n: None for n in base_tree.DG_prime.nodes}
+def pareto_plot(data):
+    # Generate pareto frontier .png file
+    models = data['Model'].unique()
+    name = data['Data'].unique()[0]
+    height = max(data['H'].unique())
+    dom_points = []
+    for model in models:
+        sub_data = data.loc[data['Model'] == model]
+        best_acc, max_features = -1, 0
+        for i in sub_data.index:
+            if (sub_data.at[i, 'Out_Acc']) > best_acc and (sub_data.at[i, 'Max_Features'] > max_features):
+                dom_points.append(i)
+                best_acc, max_features = sub_data.at[i, 'Out_Acc'], sub_data.at[i, 'Max_Features']
+    domed_pts = list(set(data.index).difference(set(dom_points)))
+    dominating_points = data.iloc[dom_points, :]
+    if domed_pts: dominated_points = data.iloc[domed_pts, :]
+    fig = plt.figure()
+    axs = fig.add_subplot(111)
+    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'AGHA': '*', 'FlowOCT': '*', 'BendersOCT': 'o'}
+    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red', 'AGHA': 'k', 'FlowOCT': 'k', 'BendersOCT': 'm'}
 
-    max_level = max(base_tree.node_level.keys())
-    # branch on root node
-    base_tree.DG_prime.nodes[0]['branch on feature'] = random.choice(feature_list)
-    node_assignments[0] = 'branch on feature'
-
-    # For each level in tree
-    #   For each node in the level
-    #       If ancestor is branching feature randomly assign random class or feature
-    #       If node is leaf node and ancestor is branching feature assign random class
-    #       If ancestor is class or pruned assign pruned
-    for level in base_tree.node_level:
-        if level == 0: continue
-        for node in base_tree.node_level[level]:
-            if node_assignments[base_tree.direct_ancestor[node]] == 'branch on feature':
-                if random.random() > .5 and level != max_level:
-                    base_tree.DG_prime.nodes[node]['branch on feature'] = random.choice(feature_list)
-                    node_assignments[node] = 'branch on feature'
-                else:
-                    base_tree.DG_prime.nodes[node]['class'] = random.choice(classes)
-                    node_assignments[node] = 'class'
-            else:
-                base_tree.DG_prime.nodes[node]['pruned'] = 0
-                node_assignments[node] = 'pruned'
-
-    return base_tree
-
-
-def path_tree(base_tree, feature_list, classes, path, child):
-    # clear any existing node assignments
-    for n in base_tree.DG_prime.nodes():
-        if 'class' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['class']
-        if 'branch on feature' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['branch on feature']
-        if 'pruned' in base_tree.DG_prime.nodes[n]:
-            del base_tree.DG_prime.nodes[n]['pruned']
-    node_assignments = {n: None for n in base_tree.DG_prime.nodes}
-    node_list = list(base_tree.DG_prime.nodes())
-
-    # branch on root node
-    base_tree.DG_prime.nodes[0]['branch on feature'] = random.choice(feature_list)
-    node_assignments[0] = 'branch on feature'
-    node_list.remove(0)
-
-    while len(node_list) > 0:
-        selected = random.choice(node_list)
-        base_tree.DG_prime.nodes[selected]['class'] = random.choice(classes)
-        node_assignments[selected] = 'class'
-        for v in reversed(base_tree.path[selected][1:-1]):
-            if node_assignments[v] is None:
-                base_tree.DG_prime.nodes[v]['branch on feature'] = random.choice(feature_list)
-                node_assignments[v] = 'branch on feature'
-                node_list.remove(v)
-            else: break
-        for c in base_tree.child[selected]:
-            if node_assignments[c] is None:
-                base_tree.DG_prime.nodes[c]['pruned'] = 0
-                node_assignments[c] = 'pruned'
-                node_list.remove(c)
-            else: break
-        node_list.remove(selected)
-    return base_tree
+    for model in models:
+        axs.scatter(dominating_points.loc[data['Model'] == model]['Max_Features'],
+                    dominating_points.loc[data['Model'] == model]['Out_Acc'],
+                    marker=markers[model], color=colors[model], label=model)
+        if domed_pts: axs.scatter(dominated_points.loc[data['Model'] == model]['Max_Features'],
+                                  dominated_points.loc[data['Model'] == model]['Out_Acc'],
+                                  marker=markers[model], color=colors[model], alpha=0.1)
+        z = np.polyfit(data.loc[data['Model'] == model]['Max_Features'],
+                       data.loc[data['Model'] == model]['Out_Acc'], 3)
+        p = np.poly1d(z)
+        axs.plot(data.loc[data['Model'] == model]['Max_Features'],
+                 p(data.loc[data['Model'] == model]['Max_Features']),
+                 color=colors[model], alpha=0.5)
+        axs.legend(loc='lower right')
+        axs.set_xlabel('Num. Branching Vertices')
+        axs.xaxis.set_ticks(np.arange(1, max(data['Max_Features'].unique())+1, 5))
+        axs.set_ylabel('Out-of-Sample Acc. (%)')
+        name = name.replace('_enc','')
+        axs.set_title(f'{str(name)} Pareto Frontier')
+    plt.savefig(os.getcwd() + '/Code/pareto_figures/' + str(name) + ' H: '+ str(height)+' Pareto Frontier.png', dpi=300)
+    plt.close()
 
 
 class consol_log:
