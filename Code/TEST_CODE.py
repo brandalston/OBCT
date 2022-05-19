@@ -34,6 +34,6 @@ height = 5
 models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 repeats = 5
 data_names = ['soybean-small_enc', 'monk1_enc', 'monk3_enc', 'house-votes-84_enc']
-file = 'pareto.csv'
+file = 'pareto_test.csv'
 pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", repeats, "-f", file])
 '''
