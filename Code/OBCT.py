@@ -49,6 +49,7 @@ class OBCT:
         # model extras metrics
         self.single_use = False
         self.max_features = 'None'
+        self.regularization = 'None'
 
         # Gurobi optimization parameters
         self.cb_type = self.modeltype[5:]
@@ -477,6 +478,12 @@ class OBCT:
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) == self.max_features)
 
+        # regularization
+        if any((match := elem).startswith('regularization') for elem in self.modelextras):
+            self.regularization = int(re.sub("[^0-9]", "", match))
+            print('Regularization value of '+str(self.regularization)+' applied at classification vertices')
+            self.model.addConstrs(quicksum(self.S[i, v] for i in self.datapoints) >= self.regularization * self.P[v]
+                                  for v in self.tree.V)
     ###########################################
     # Model Warm Start
     ###########################################
