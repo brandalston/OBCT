@@ -43,21 +43,23 @@ You can call the `model_runs.py` main function within a python file as follows,
 
 ```python
 import model_runs
-data_names = ['monk1_enc','breast-cancer_enc']
-heights = [2,3,4,5]
-models = ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2']
+data_names = ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc']
+heights = [3,4,5]
+models = ['FlowOCT', 'BendersOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 time_limit = 3600
-extras = ['max_features-15']
-rand_states = [138, 15, 89, 42, 0, None]
+extras = ['max_features-25']
+rand_states = [13, 58, 94, None]
 tuning = None
-file = 'results.csv'
-log_files = True
-model_runs.main(["-d",data_names,"-h",heights,"-m",models,"-t",time_limit,"-e",extras,"-r",rand_states,"-c", tuning,"-f",file,"-l", log_files])
+file = 'test_results.csv'
+consol_log = False
+model_runs.main(
+    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
+    "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['monk1_enc','breast-cancer_enc'] -h [2,3,4,5] -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['fixing','max_features-15'] -r 5 -c None -f 'results.csv' -l True
+python3 model_runs.py -d ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc'] -h [3,4,5] -m ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['max_features-15'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
@@ -81,22 +83,27 @@ We assume `-f file` is located in the `\results_files` folder
 You can generate pareto frontiers from within a python file as follows,
 ```python
 import pareto_runs
-height = 5
-models = ['MCF1','MCF2','CUT1','CUT2']
-repeats = 5
-data_names = ['house-votes-84_enc']
-file = 'pareto.csv'
-pareto_runs.main(["-d",data_names,"-h",height,"-m",models,"-t",3600,"-r",repeats,"-f",file])
+height = 4
+models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+repeats = 3
+data_names = ['hayes-roth_enc', 'house-votes-84_enc']
+file = 'pareto_test.csv'
+pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", repeats, "-f", file])
 ```
 
 To run from terminal do the following 
 ```bash
-python3 pareto_runs.py -d ['monk1_enc','soybean-small_enc'] -h 5 -m ['MCF1','MCF2','CUT1','CUT2'] -t 3600 -r 5 -f 'pareto.csv'
+python3 pareto_runs.py -d ['hayes-roth_enc', 'house-votes-84_enc'] -h 4 -m ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2'] -t 3600 -r 3 -f 'pareto_test.csv'
 ```
+- Note: `FOCT` must be the model name to generate the pareto frontier of FlowOCT
 ***
 
 ## Models Functionality
 For understanding model functionality associated with integer and fractional separation procedures in **CUT1** and **CUT2** models, `-e model_extras` and `-c tuning` functionality please refer to the `USAGE.md` file. 
+
+***
+## Paper Results
+To recreate the results outlined in the [paper](hyperlink) run `paper_results.py`
 
 ***
 

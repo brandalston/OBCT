@@ -4,8 +4,8 @@ import pareto_runs
 
 # MODEL RUN EXAMPLE
 data_names = ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc']
-heights = [2,3,4]
-models = ['CART']
+heights = [3,4,5]
+models = ['FlowOCT', 'BendersOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 time_limit = 3600
 extras = ['max_features-25']
 rand_states = [138, 15, 89, 42, 0]
@@ -18,9 +18,9 @@ model_runs.main(
 
 # PARETO FRONTIER EXAMPLE
 height = 4
-models = ['FlowOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 repeats = 3
-data_names = ['soybean-small_enc', 'monk1_enc', 'monk3_enc', 'house-votes-84_enc']
+data_names = ['hayes-roth_enc', 'house-votes-84_enc']
 file = 'pareto_test.csv'
 pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", repeats, "-f", file])
 
