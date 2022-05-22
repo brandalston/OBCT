@@ -145,8 +145,8 @@ def pareto_plot(data):
     if domed_pts: dominated_points = data.iloc[domed_pts, :]
     fig = plt.figure()
     axs = fig.add_subplot(111)
-    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'AGHA': '*', 'FlowOCT': '*', 'BendersOCT': 'o'}
-    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red', 'AGHA': 'k', 'FlowOCT': 'k', 'BendersOCT': 'm'}
+    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'FOCT': '*'}
+    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red', 'FOCT': 'k'}
 
     for model in models:
         axs.scatter(dominating_points.loc[data['Model'] == model]['Max_Features'],

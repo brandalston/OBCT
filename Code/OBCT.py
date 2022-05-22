@@ -413,7 +413,7 @@ class OBCT:
                 self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1 for i in self.datapoints)
 
         """ FlowOCT Model Connectivity Constraints (only used for Pareto Frontier Purposes) """
-        if 'FlowOCT' in self.modeltype:
+        if 'FOCT' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS, lb=0, name='Z')
             # Flow generator at node zero vars
