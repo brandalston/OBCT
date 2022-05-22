@@ -85,15 +85,15 @@ You can generate pareto frontiers from within a python file as follows,
 import pareto_runs
 height = 4
 models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
-repeats = 3
+rand_states = [15, 78, 0]
 data_names = ['hayes-roth_enc', 'house-votes-84_enc']
 file = 'pareto_test.csv'
-pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", repeats, "-f", file])
+pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", rand_states, "-f", file])
 ```
 
 To run from terminal do the following 
 ```bash
-python3 pareto_runs.py -d ['hayes-roth_enc', 'house-votes-84_enc'] -h 4 -m ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2'] -t 3600 -r 3 -f 'pareto_test.csv'
+python3 pareto_runs.py -d ['hayes-roth_enc', 'house-votes-84_enc'] -h 4 -m ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2'] -t 3600 -r [15, 78, 0] -f 'pareto_test.csv'
 ```
 - Note: `FOCT` must be the model name to generate the pareto frontier of FlowOCT
 ***
