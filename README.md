@@ -2,7 +2,7 @@
 
 Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
 
-This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x]([https://www.gurobi.com/downloads/gurobi-optimizer-eula/](https://www.gurobi.com)) solver. Required python packages are outlined in `requirements.txt`.
+This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x]([https://www.gurobi.com]) solver. Required python packages are outlined in `requirements.txt`.
 
 *** 
 ***
