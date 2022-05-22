@@ -1,3 +1,5 @@
+Copyright 2022 Brandon C. Alston, Hamidreza Validi
+
 # Optimal Binary Classification Trees
 
 Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
