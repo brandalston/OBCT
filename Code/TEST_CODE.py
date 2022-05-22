@@ -17,9 +17,9 @@ model_runs.main(
     "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
 
 # PARETO FRONTIER EXAMPLE
-height = 5
-models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
-repeats = 5
+height = 4
+models = ['FlowOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+repeats = 3
 data_names = ['soybean-small_enc', 'monk1_enc', 'monk3_enc', 'house-votes-84_enc']
 file = 'pareto_test.csv'
 pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", repeats, "-f", file])

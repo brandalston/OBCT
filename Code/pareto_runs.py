@@ -96,7 +96,7 @@ def main(argv):
         pareto_data = pd.pareto_data = pd.read_csv(os.getcwd()+'/Code/results_files/'+file_out, na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)
-        for model in ['AGHA','MCF1','MCF2','CUT1','CUT2','FlowOCT','BendersOCT']:
+        for model in ['MCF1','MCF2','CUT1','CUT2','FlowOCT']:
             sub_data = file_data.loc[file_data['Model'] == model]
             for feature in sub_data['Max_Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max_Features'] == feature]
