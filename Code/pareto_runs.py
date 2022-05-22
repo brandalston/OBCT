@@ -17,13 +17,13 @@ def main(argv):
     height = None
     time_limit = None
     modeltypes = None
-    repeats = None
+    rand_states = None
     file_out = None
 
     try:
         opts, args = getopt.getopt(argv, "d:h:t:m:r:f:",
                                    ["data_files=", "height=", "timelimit=",
-                                    "models=", "repeats=", "results_file="])
+                                    "models=", "rand_states=", "results_file="])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -35,8 +35,8 @@ def main(argv):
             time_limit = int(arg)
         elif opt in ("-m", "--models"):
             modeltypes = arg
-        elif opt in ("-r", "--repeats"):
-            repeats = arg
+        elif opt in ("-r", "--rand_states"):
+            rand_states = arg
         elif opt in ("-f", "--results_file"):
             file_out = arg
 
@@ -62,16 +62,14 @@ def main(argv):
             results.close()
 
     target = 'target'
-    repeats = repeats
-    rand_states = [138, 15, 89, 42, 0]
 
     for file in data_files:
         # pull dataset to train model with
         data = OU.get_data(file.replace('.csv', ''))
-        for i in range(repeats):
+        for i in rand_states:
             print('\n\nDataset: ' + str(file) + ', H: ' + str(height) + ', Iteration: ' + str(i) + '. Run Start: ' + str(
                   time.strftime("%I:%M %p", time.localtime())))
-            train_set, test_set = train_test_split(data, train_size=0.5, random_state=rand_states[i])
+            train_set, test_set = train_test_split(data, train_size=0.5, random_state=i)
             for modeltype in modeltypes:
                 WSV = None
                 for num_features in range(1, 2 ** height):
@@ -90,13 +88,13 @@ def main(argv):
                     model_wsm_acc, model_wsm_assgn = OU.model_acc(tree=tree, target=target,
                                                                   data=train_set)
                     WSV = {'tree': tree, 'data': model_wsm_assgn}
-                    if 'AGHA' == modeltype: WSV = {'tree': tree, 'data': False}
+                    if 'FOCT' == modeltype: WSV = {'tree': tree, 'data': False}
 
         # Generate pareto plot of models using run averages of pareto.csv file
         pareto_data = pd.pareto_data = pd.read_csv(os.getcwd()+'/Code/results_files/'+file_out, na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)
-        for model in ['MCF1','MCF2','CUT1','CUT2','FlowOCT']:
+        for model in ['FOCT','MCF1','MCF2','CUT1','CUT2']:
             sub_data = file_data.loc[file_data['Model'] == model]
             for feature in sub_data['Max_Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max_Features'] == feature]
