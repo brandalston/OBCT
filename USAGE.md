@@ -43,10 +43,12 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
   - `'max_features-k'`
 - Exactly `k` features used in the DT
   - `'num_features-k'`
-- Each future used once in DT
-  - `'single_use'`
+- Each future used once no more than k times in DT
+  - `'repeat_use-k'`
+- Require k datapoints in a classification node to apply regularization
+  - `'regularization-k`
 
-Note: `model_extras` are not applicable to models: **AGHA**, **FlowOCT**, **BendersOCT**
+Note: `model_extras` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
 
 ***
 ## Tuning and Warm Starting
@@ -61,7 +63,7 @@ The `-c tuning` parameter is meant for calibrating the number of features used
   - Train full model on 25% calibration set + 50% training set
   - Warm start full model using calibration + training dataset assignments and assigned tree
 
-Note: `tuning` are not applicable to models: **AGHA**, **FlowOCT**, **BendersOCT**
+Note: `tuning` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
 
 ***
 ***

@@ -47,7 +47,7 @@ class OBCT:
         self.GEN = 0
 
         # model extras metrics
-        self.single_use = False
+        self.repeat_use = False
         self.max_features = 'None'
         self.regularization = 'None'
 
@@ -459,8 +459,8 @@ class OBCT:
     ###########################################
     def extras(self):
         # feature used once
-        if 'single_use' in self.modelextras:
-            self.single_use = True
+        if any((match := elem).startswith('repeat_use') for elem in self.modelextras):
+            self.repeat_use = int(re.sub("[^0-9]", "", match))
             print('Each feature used at most once')
             self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= 1 for f in self.features)
 
