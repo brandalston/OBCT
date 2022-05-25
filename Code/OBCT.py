@@ -484,6 +484,7 @@ class OBCT:
             print('Regularization value of '+str(self.regularization)+' applied at classification vertices')
             self.model.addConstrs(quicksum(self.S[i, v] for i in self.datapoints) >= self.regularization * self.P[v]
                                   for v in self.tree.V)
+
     ###########################################
     # Model Warm Start
     ###########################################
