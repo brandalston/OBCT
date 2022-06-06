@@ -1,1 +1,13 @@
 Data,H,|I|,Out_Acc,In_Acc,Sol_Time,MIP_Gap,Obj_Val,Obj_Bound,Model,Num_CB,User_Cuts,Cuts_per_CB,Total_Time,INT_CB_time,FRAC_CB_TIME,CB_Eps,Time_Limit,Rand_State,Calibration,Single_Feature_Use,Max_Features,Regularization
+soybean-small_enc,2,35,1.0,1.0,0.1165931224822998,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,138,False,False,None,None
+soybean-small_enc,2,35,1.0,1.0,0.04487800598144531,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,15,False,False,None,None
+soybean-small_enc,2,35,1.0,1.0,0.0636301040649414,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,89,False,False,None,None
+soybean-small_enc,2,35,1.0,1.0,0.09154200553894043,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,42,False,False,None,None
+soybean-small_enc,2,35,0.9166666666666666,1.0,0.06931614875793457,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,0,False,False,None,None
+soybean-small_enc,3,35,1.0,1.0,0.08026909828186035,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,138,False,False,None,None
+soybean-small_enc,3,35,1.0,1.0,0.0930328369140625,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,15,False,False,None,None
+soybean-small_enc,3,35,1.0,1.0,0.11401820182800293,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,89,False,False,None,None
+soybean-small_enc,3,35,0.9166666666666666,1.0,0.08523011207580566,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,42,False,False,None,None
+soybean-small_enc,3,35,0.9166666666666666,1.0,0.13004708290100098,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,0,False,False,None,None
+soybean-small_enc,4,35,1.0,1.0,0.5532028675079346,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,138,False,False,None,None
+soybean-small_enc,4,35,1.0,1.0,0.1953120231628418,0.0,35.0,35.0,MCF2,0,0,0,0,0,0,0,3600,15,False,False,None,None
