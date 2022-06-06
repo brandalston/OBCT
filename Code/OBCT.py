@@ -258,6 +258,7 @@ class OBCT:
                         self.model.addConstrs(
                             self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
                             for i in self.datapoints)
+
             # each datapoint has at most one terminal vertex
             self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
                                   for i in self.datapoints)
