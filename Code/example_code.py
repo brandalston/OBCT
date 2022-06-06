@@ -1,9 +1,8 @@
 import model_runs
 import pareto_runs
 
-
-# MODEL RUN EXAMPLE
 """
+# MODEL RUN EXAMPLE
 data_names = ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc']
 heights = [3,4,5]
 models = ['FlowOCT', 'BendersOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
@@ -28,9 +27,6 @@ file = 'pareto_test.csv'
 pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", rand_states, "-f", file])
 
 """
-
-import model_runs
-import pareto_runs
 
 testing_1 = 'short_runs'
 time_limit = 3600
