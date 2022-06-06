@@ -13,7 +13,7 @@ def get_data(name):
     # Remove any non-numerical features from dataset
     global data
     try:
-        data = pd.read_csv('Code/Datasets/'+name+'.csv', na_values='?')
+        data = pd.read_csv('/Datasets/'+name+'.csv', na_values='?')
         return data
     except:
         print("Dataset Not Found or Error in Encoding Process!")
