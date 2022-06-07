@@ -5,7 +5,7 @@ We offer the user the ability to control both integer and fractional separation 
 
 By default, models **CUT1** and **CUT2** invoke gurobi [lazy](https://www.gurobi.com/documentation/9.5/refman/lazy.html) parameters = 3, constraints that cut off the relaxation solution at the root node are pulled in for separation constraints.
 
-***
+**
 ### Fractional Separation
 There are a number of ways to invoke the fractional separation procedures outlined in the paper. 
 For fractional procedures use the following syntax where `#` specifies the user type of fractional cut (1,2,3)
