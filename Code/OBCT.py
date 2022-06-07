@@ -241,7 +241,7 @@ class OBCT:
 
             # if vertex v selected as terminal node for datapoint i
             # then ancestor of vertex v receives flow
-            # Z[iv,a(v),v] <= S[i,v] for all i in I, v in V
+            # Z[iv,a(v),v] == S[i,v] for all i in I, v in V
             for v in self.tree.V:
                 if v == 0: continue
                 self.model.addConstrs(self.Z[i, v, self.tree.path[v][-2], v] == self.S[i, v] for i in self.datapoints)
@@ -261,6 +261,7 @@ class OBCT:
                             for i in self.datapoints)
 
             # each datapoint has at most one terminal vertex
+            # sum(s[i, v] for v in V]) == 1
             self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
                                   for i in self.datapoints)
 
