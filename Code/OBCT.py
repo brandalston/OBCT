@@ -47,7 +47,7 @@ class OBCT:
         self.GEN = 0
 
         # model extras metrics
-        self.repeat_use = False
+        self.repeat_use = 'None'
         self.max_features = 'None'
         self.regularization = 'None'
 
@@ -61,6 +61,7 @@ class OBCT:
         self.cut_constraint = 0
         self.single_terminal = 0
         self.cumul_cut_constraint = 0
+
         """
         We assume epsilon value of 1e-4 for fractional separation
         Lazy cuts  for integer separation
@@ -465,8 +466,8 @@ class OBCT:
         # feature used once
         if any((match := elem).startswith('repeat_use') for elem in self.modelextras):
             self.repeat_use = int(re.sub("[^0-9]", "", match))
-            print('Each feature used at most once')
-            self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= 1 for f in self.features)
+            print('Each feature used at most ' + str(self.repeat_use) + ' times')
+            self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= self.repeat_use for f in self.features)
 
         # number of maximum branching nodes
         if any((match := elem).startswith('max_features') for elem in self.modelextras):
