@@ -110,7 +110,7 @@ To recreate the results outlined in the [paper](hyperlink) run `paper_results.py
 ***
 
 ## Acknowledgments
-The code found in `BendersOCT.py FlowOCT.py FlowOCTTree.py FlowOCTutils.py` are taken directly from the [Strong Tree](https://github.com/pashew94/StrongTree/) GitHub public repository.
+The code found in `BendersOCT.py`, `FlowOCT.py`, `FlowOCTTree.py,` and `FlowOCTutils.py` are taken directly from the [Strong Tree](https://github.com/pashew94/StrongTree/) GitHub public repository.
 All rights and ownership are to the original owners. 
 
 ***
