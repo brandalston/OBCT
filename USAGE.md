@@ -51,7 +51,7 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
 Note: `model_extras` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
 
 ***
-## Tuning and Warm Starting
+## Tuning
 The `-c tuning` parameter is meant for calibrating the number of features used
   - ex.`-c 'calibration'`
   - Uses the second objective function as a constraint for calibrating the number of totla branching features
