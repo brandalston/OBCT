@@ -64,7 +64,7 @@ To run from terminal do the following,
 python3 model_runs.py -d ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc'] -h [3,4,5] -m ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['max_features-15'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
 ```
 Note:
-- We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
+- We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column (line 84)
 - If results output file `-f file` is `None` the `models_run.py` automatically generates a `.csv` results file with the parameters of the function call as the file name saved to the `\results_files` folder
 - `-e model_extras`, `-c tuning`, and `-f file` may be `None` input arguments, all others must hold a valid value
 
