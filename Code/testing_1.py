@@ -19,9 +19,3 @@ data_names = ['car_evaluation_enc', 'kr-vs-kp_enc', 'fico_binary_enc']
 model_runs.main(
     ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
     "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
-
-heights = [3]
-data_names = ['hayes-roth_enc','monk2_enc','spect_enc','balance-scale_enc']
-model_runs.main(
-    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
-    "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
