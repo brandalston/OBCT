@@ -8,8 +8,15 @@ tuning = None
 file = 'test_results.csv'
 models = ['MCF2']
 consol_log = False
-heights = [3,4,5]
-data_names = ['breast-cancer_enc']
+heights = [2]
+data_names = ['balance-scale_enc']
+model_runs.main(
+    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
+    "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
+
+data_names = ['fico_binary_enc']
+heights = [4]
+rand_states = [0]
 model_runs.main(
     ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
     "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
