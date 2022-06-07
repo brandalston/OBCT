@@ -97,8 +97,8 @@ def main(argv):
                 WSV, unreachable = None, {'data': {}, 'tree': {}}
                 for modeltype in modeltypes:
                     # Log .lp and .txt files name
-                    log = log_path + '_' + str(file) + '_' + str(h) + '_' + str(modeltype) + '_' + 'T:' + str(
-                        time_limit) + '_' + str(model_extras)
+                    log = log_path + '_' + str(file) + '_H:' + str(h) + '_M:' + str(modeltype) + '_' + 'T:' + str(
+                        time_limit) + '_E:' + str(model_extras)
                     if any([char.isdigit() for char in modeltype]):
                         # Calibrate number of maximum branching nodes using pareto frontier and warm starts
                         # Use a 25% calibration set for process
