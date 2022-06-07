@@ -16,7 +16,7 @@ def get_data(name):
         data = pd.read_csv(os.getcwd()+'/Datasets/'+name+'.csv', na_values='?')
         return data
     except:
-        print("Dataset Not Found or Error in Encoding Process!")
+        print("Dataset Not Found!")
     return
 
 
