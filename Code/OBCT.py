@@ -261,7 +261,7 @@ class OBCT:
                             for i in self.datapoints)
 
             # each datapoint has at most one terminal vertex
-            # sum(s[i, v] for v in V]) == 1
+            # sum(s[i, v] for v in V]) == 1 for i in I
             self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
                                   for i in self.datapoints)
 
@@ -287,6 +287,7 @@ class OBCT:
 
             if 'BOTH' in self.cb_type:
                 # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
                 self.single_terminal = self.model.addConstrs(
                     quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
                     for i in self.datapoints)
@@ -294,6 +295,7 @@ class OBCT:
                     self.single_terminal[i].lazy = 3
             elif 'FRAC' in self.cb_type:
                 # terminal vertex of datapoint must be in reachable path
+                # s[i,v] <= q[i,c] for i in I, for c in path[v], for v in V / {1}
                 self.cut_constraint = self.model.addConstrs(self.S[i, v] <= self.Q[i, c] for i in self.datapoints
                                                             for v in self.tree.V if v != 0
                                                             for c in self.tree.path[v][1:])
@@ -303,6 +305,7 @@ class OBCT:
                         for c in self.tree.path[v][1:]:
                             self.cut_constraint[i, v, c].lazy = 3
                 # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
                 self.single_terminal = self.model.addConstrs(
                     quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
                     for i in self.datapoints)
@@ -310,13 +313,22 @@ class OBCT:
                     self.single_terminal[i].lazy = 3
             elif 'INT' in self.cb_type:
                 # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
                 self.single_terminal = self.model.addConstrs(
                     quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
                     for i in self.datapoints)
                 for i in self.datapoints:
                     self.single_terminal[i].lazy = 3
             elif 'GRB' in self.cb_type:
+                # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
+                self.single_terminal = self.model.addConstrs(
+                    quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
+                    for i in self.datapoints)
+                for i in self.datapoints:
+                    self.single_terminal[i].lazy = 3
                 # terminal vertex of datapoint must be in reachable path
+                # s[i,v] <= q[i,c] for i in I, for c in path[v], for v in V / {1}
                 self.cut_constraint = self.model.addConstrs(self.S[i, v] <= self.Q[i, c] for i in self.datapoints
                                                             for v in self.tree.V if v != 0
                                                             for c in self.tree.path[v][1:])
@@ -325,21 +337,17 @@ class OBCT:
                         if v == 0: continue
                         for c in self.tree.path[v][1:]:
                             self.cut_constraint[i, v, c].lazy = 3
-                # each datapoint has at most one terminal vertex
-                self.single_terminal = self.model.addConstrs(
-                    quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
-                    for i in self.datapoints)
-                for i in self.datapoints:
-                    self.single_terminal[i].lazy = 3
             elif 'ALL' in self.cb_type:
+                # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
+                self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
+                                      for i in self.datapoints)
                 # terminal vertex of datapoint must be in reachable path
+                # s[i,v] <= q[i,c] for i in I, for c in path[v], for v in V / {1}
                 for i in self.datapoints:
                     for v in self.tree.V:
                         if v == 0: continue
                         self.model.addConstrs(self.S[i, v] <= self.Q[i, c] for c in self.tree.path[v][1:])
-                # each datapoint has at most one terminal vertex
-                self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
-                                      for i in self.datapoints)
 
         """ CUT2 Model Connectivity Constraints """
         if 'CUT2' in self.modeltype:
@@ -363,13 +371,21 @@ class OBCT:
             # separation procedure
             if 'BOTH' in self.cb_type:
                 # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
                 self.single_terminal = self.model.addConstrs(
                     quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
                     for i in self.datapoints)
                 for i in self.datapoints:
                     self.single_terminal[i].lazy = 3
             elif 'FRAC' in self.cb_type:
+                # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
+                self.single_terminal = self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
+                                                             for i in self.datapoints)
+                for i in self.datapoints:
+                    self.single_terminal[i].lazy = 3
                 # terminal vertex of datapoint must be in reachable path for vertex and all children
+                # s[i, v] + sum(s[i, u] for u in CHILD[v]) <= q[i, c] for i in I, for c in path[v], for v in V / {1}
                 self.cumul_cut_constraint = self.model.addConstrs(
                     self.S[i, v] + quicksum(self.S[i, u] for u in self.tree.child[v])
                     <= self.Q[i, c] for i in self.datapoints
@@ -380,19 +396,22 @@ class OBCT:
                         if v == 0: continue
                         for c in self.tree.path[v][1:]:
                             self.cumul_cut_constraint[i, v, c].lazy = 3
-                # each datapoint has at most one terminal vertex
-                self.single_terminal = self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
-                                                             for i in self.datapoints)
-                for i in self.datapoints:
-                    self.single_terminal[i].lazy = 3
             elif 'INT' in self.cb_type:
                 # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
                 self.single_terminal = self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
                                                              for i in self.datapoints)
                 for i in self.datapoints:
                     self.single_terminal[i].lazy = 3
             elif 'GRB' in self.cb_type:
+                # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V]) == 1 for i in I
+                self.single_terminal = self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
+                                                             for i in self.datapoints)
+                for i in self.datapoints:
+                    self.single_terminal[i].lazy = 3
                 # terminal vertex of datapoint must be in reachable path for vertex and all children
+                # s[i, v] + sum(s[i, u] for u in CHILD[v]) <= q[i, c] for i in I, for c in path[v], for v in V / {1}
                 self.cumul_cut_constraint = self.model.addConstrs(
                     self.S[i, v] + quicksum(self.S[i, u] for u in self.tree.child[v])
                     <= self.Q[i, c] for i in self.datapoints
@@ -403,21 +422,17 @@ class OBCT:
                         if v == 0: continue
                         for c in self.tree.path[v][1:]:
                             self.cumul_cut_constraint[i, v, c].lazy = 3
-
-                # each datapoint has at most one terminal vertex
-                self.single_terminal = self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V if v != 0) <= 1
-                                                             for i in self.datapoints)
-                for i in self.datapoints:
-                    self.single_terminal[i].lazy = 3
             elif 'ALL' in self.cb_type:
+                # each datapoint has at most one terminal vertex
+                # sum(s[i, v] for v in V) == 1 for i in I
+                self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1 for i in self.datapoints)
                 # terminal vertex of datapoint must be in reachable path for vertex and all children
+                # s[i, v] + sum(s[i, u] for u in CHILD[v]) <= q[i, c] for i in I, for c in path[v], for v in V / {1}
                 for i in self.datapoints:
                     for v in self.tree.V:
                         if v == 0: continue
                         self.model.addConstrs(self.S[i, v] + quicksum(self.S[i, u] for u in self.tree.child[v]) <=
                                               self.Q[i, c] for c in self.tree.path[v][1:])
-                # each datapoint has at most one terminal vertex
-                self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1 for i in self.datapoints)
 
         """ FlowOCT Model Connectivity Constraints (only used for Pareto Frontier Purposes) """
         if 'FOCT' in self.modeltype:
