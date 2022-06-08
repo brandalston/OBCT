@@ -126,7 +126,7 @@ class OBCT:
         # Classification vertex vars
         self.W = self.model.addVars(self.tree.V, self.classes, vtype=GRB.BINARY, name='W')
         # Pruned vertex vars
-        self.P = self.model.addVars(self.tree.V, vtype=GRB.CONTINUOUS, lb=0, ub=1, name='P')
+        self.P = self.model.addVars(self.tree.V, vtype=GRB.CONTINUOUS, lb=0, name='P')
         # Datapoint terminal vertex vars
         self.S = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='S')
 
