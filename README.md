@@ -48,7 +48,7 @@ You can call the `model_runs.py` main function within a python file as follows,
 import model_runs
 data_names = ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc']
 heights = [3,4,5]
-models = ['FlowOCT', 'BendersOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+models = ['MCF1', 'MCF2', 'CUT1-ALL', 'CUT2-FRAC-3']
 time_limit = 3600
 extras = ['max_features-25']
 rand_seed = [13, 58, 94, None]
@@ -62,7 +62,7 @@ model_runs.main(
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc'] -h [3,4,5] -m ['FlowOCT','BendersOCT','MCF1','MCF2','CUT1','CUT2'] -t 3600 -e ['max_features-15'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
+python3 model_runs.py -d ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc'] -h [3,4,5] -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -e ['max_features-25'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column (line 84)
