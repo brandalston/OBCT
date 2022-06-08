@@ -125,10 +125,10 @@ class OBCT:
         self.B = self.model.addVars(self.tree.V, self.features, vtype=GRB.BINARY, name='B')
         # Classification vertex vars
         self.W = self.model.addVars(self.tree.V, self.classes, vtype=GRB.BINARY, name='W')
-        # Datapoint terminal vertex vars
-        self.S = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='S')
         # Pruned vertex vars
         self.P = self.model.addVars(self.tree.V, vtype=GRB.CONTINUOUS, lb=0, name='P')
+        # Datapoint terminal vertex vars
+        self.S = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='S')
 
         """ Model Objective and BASE constraints """
         # Objective: Maximize the number of correctly classified datapoints
