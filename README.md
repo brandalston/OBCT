@@ -19,7 +19,7 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
   - `pareto_runs.py` contains the code necessary to create a pareto frontier `.png` file of instances called by the user
 
 - `results_files/` folder stores the generated `.csv` files with model metrics
-- `results_figures/` folder stores the generated `.png` files for experimental results
+- `pareto_figures/` folder stores the generated `.png` files for experimental results
 - `log_files/` folder stores model `.lp` files and Gurobi `.txt` log files
 - `Datasets/` folder contains the datasets used for generating experimental results
   - Note: `Datasets/` should also be used as the folder where user dataset `.csv` files are stored
@@ -35,7 +35,8 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
     - h : `int list`, maximum depth(s) of trained tree(s)
     - t : `float`, gurobi model time limit in s
     - m : `str list`, list of model(s) to use
-    - r : `int list`, list of random state(s) to use
+    - r : `int list`, list of random seed(s) to use
+      - `rand_seed = [k,...,k]`  for repeat use of randome state `k`
     - e : `str list`, model extra(s), if applicable
     - c : `str`, tuning parameter
     - f : `str`, results output file `.csv`
@@ -50,13 +51,13 @@ heights = [3,4,5]
 models = ['FlowOCT', 'BendersOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 time_limit = 3600
 extras = ['max_features-25']
-rand_states = [13, 58, 94, None]
+rand_seed = [13, 58, 94, None]
 tuning = None
 file = 'test_results.csv'
 consol_log = False
 model_runs.main(
     ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
-    "-e", extras, "-r", rand_states, "-c", tuning, "-f", file, "-l", consol_log])
+    "-e", extras, "-r", rand_seed, "-c", tuning, "-f", file, "-l", consol_log])
 ```
 
 To run from terminal do the following,
