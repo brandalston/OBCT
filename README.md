@@ -2,7 +2,7 @@ Copyright 2022 Brandon C. Alston, Hamidreza Validi
 
 # Optimal Binary Classification Trees
 
-Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](hyperlink) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
+Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](http://arxiv.org/abs/2206.04857) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
 
 This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/) solver. Required python packages are outlined in `requirements.txt`.
 
