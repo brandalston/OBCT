@@ -106,7 +106,7 @@ For understanding model functionality associated with integer and fractional sep
 
 ***
 ## Paper Results
-To recreate the results outlined in the [paper](hyperlink) run `paper_results.py`
+To recreate the results outlined in the [paper](http://arxiv.org/abs/2206.04857) run `paper_results.py`
 
 ***
 
