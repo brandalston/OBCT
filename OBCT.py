@@ -4,7 +4,7 @@ import time
 
 
 class OBCT:
-    
+
     def __init__(self, data, tree, model, time_limit, target, name, warm_start=None, model_extras=None, log=None):
         """
         Parameters
@@ -26,11 +26,12 @@ class OBCT:
         self.target = target
         self.datapoints = data.index
         self.dataname = name
-        self.modelextras = model_extras
+        self.model_extras = model_extras
         self.time_limit = time_limit
         self.log = log
+        print('LOGGING', self.log)
 
-        print('Model: '+str(self.modeltype))
+        print('Model: ' + str(self.modeltype))
         # Binary Encoded Feature Set and Class Set
         self.features = self.data.columns[self.data.columns != self.target]
         self.classes = data[target].unique()
@@ -80,7 +81,7 @@ class OBCT:
             self.eps = -4
             if 'ROOT' in self.cb_type:
                 self.rootnode = True
-            print('User FRAC cuts (ROOT: '+str(self.rootnode)+')')
+            print('User FRAC cuts (ROOT: ' + str(self.rootnode) + ')')
         elif 'INT' in self.cb_type:
             print('User INT lazy = 3 cuts')
         elif 'ALL' in self.cb_type:
@@ -92,10 +93,11 @@ class OBCT:
         self.model = Model(f'{self.modeltype}')
         self.model.Params.TimeLimit = time_limit
         self.model.Params.LogToConsole = 0
+        self.model._CB_iter = 0
         # Use only 1 thread for testing purposes
         self.model.Params.Threads = 1
         # Save Gurobi log to file
-        if self.log is not None:
+        if self.log:
             self.model.Params.LogFile = self.log
 
         # CUT-1,2 model callback metrics
@@ -173,8 +175,9 @@ class OBCT:
             # Z[i,a(v),v] <= Q[i,v] for i in I, v in V\1
             for v in self.tree.V:
                 if v == 0: continue
-                self.model.addConstrs(quicksum(self.Z[i, u, v] for u in self.tree.DG.neighbors(v) if u < v) <= self.Q[i, v]
-                                      for i in self.datapoints)
+                self.model.addConstrs(
+                    quicksum(self.Z[i, u, v] for u in self.tree.DG.neighbors(v) if u < v) <= self.Q[i, v]
+                    for i in self.datapoints)
 
             # flow conservation at v
             # Z[i,a(v),v] = Z[i,v,l(v)] + Z[i,v,r(v) + S[i,v] for i in I, v in V\1
@@ -182,7 +185,8 @@ class OBCT:
             for v in self.tree.V:
                 if v != 0:
                     self.model.addConstrs(quicksum(self.Z[i, u, v] for u in self.tree.DG.neighbors(v) if u < v) ==
-                                          quicksum(self.Z[i, v, u] for u in self.tree.DG.neighbors(v) if v < u) + self.S[
+                                          quicksum(self.Z[i, v, u] for u in self.tree.DG.neighbors(v) if v < u) +
+                                          self.S[
                                               i, v]
                                           for i in self.datapoints)
                 else:
@@ -236,7 +240,8 @@ class OBCT:
                 if v == 0: continue
                 self.model.addConstrs(
                     quicksum(
-                        self.Z[i, u, j, v] for j in self.tree.DG.neighbors(v) if j < v for u in self.tree.V if u != 0) <=
+                        self.Z[i, u, j, v] for j in self.tree.DG.neighbors(v) if j < v for u in self.tree.V if
+                        u != 0) <=
                     self.Q[i, v] for i in self.datapoints)
 
             # if vertex v selected as terminal node for datapoint i
@@ -273,7 +278,7 @@ class OBCT:
             # left right branching for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
             # q[i,r(v)] <= sum(b[v,f], f if x[i,f]=1) for all i in I, v in N
-            # if (self.modelextras is None) or ('conflict_constraints' not in self.modelextras):
+            # if (self.model_extras is None) or ('conflict_constraints' not in self.model_extras):
             for v in self.tree.B:
                 for u in self.tree.DG_prime.neighbors(v):
                     if u % 2 == 1:
@@ -352,7 +357,7 @@ class OBCT:
         """ CUT2 Model Connectivity Constraints """
         if 'CUT2' in self.modeltype:
             # Source-terminal vertex vars
-            self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
+            self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.CONTINUOUS, name='Q')
 
             # left right branching for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
@@ -445,7 +450,8 @@ class OBCT:
             for v in self.tree.V:
                 if v != 0:
                     self.model.addConstrs(quicksum(self.Z[i, u, v] for u in list(self.tree.DG.neighbors(v)) if u < v) ==
-                                          quicksum(self.Z[i, v, u] for u in list(self.tree.DG.neighbors(v)) if v < u) + self.S[i, v]
+                                          quicksum(self.Z[i, v, u] for u in list(self.tree.DG.neighbors(v)) if v < u) +
+                                          self.S[i, v]
                                           for i in self.datapoints)
                 else:
                     self.model.addConstrs(quicksum(self.Z[i, v, u] for u in list(self.tree.DG.neighbors(v)) if v < u) +
@@ -461,11 +467,13 @@ class OBCT:
             for v in self.tree.B:
                 for (u, n) in list(self.tree.DG_prime.edges(v)):
                     if n % 2 == 1:
-                        self.model.addConstrs(self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 0)
-                                              for i in self.datapoints)
+                        self.model.addConstrs(
+                            self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 0)
+                            for i in self.datapoints)
                     elif n % 2 == 0:
-                        self.model.addConstrs(self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
-                                              for i in self.datapoints)
+                        self.model.addConstrs(
+                            self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
+                            for i in self.datapoints)
 
         # pass to model DV for callback purposes
         self.model._Q = self.Q
@@ -480,29 +488,29 @@ class OBCT:
     ###########################################
     def extras(self):
         # feature used once
-        if any((match := elem).startswith('repeat_use') for elem in self.modelextras):
+        if any((match := elem).startswith('repeat_use') for elem in self.model_extras):
             self.repeat_use = int(re.sub("[^0-9]", "", match))
             print('Each feature used at most ' + str(self.repeat_use) + ' times')
             self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= self.repeat_use for f in self.features)
 
         # number of maximum branching nodes
-        if any((match := elem).startswith('max_features') for elem in self.modelextras):
+        if any((match := elem).startswith('max_features') for elem in self.model_extras):
             self.max_features = int(re.sub("[^0-9]", "", match))
             print('No more than ' + str(self.max_features) + ' feature(s) used')
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
 
         # exact number of branching nodes
-        if any((match := elem).startswith('num_features') for elem in self.modelextras):
+        if any((match := elem).startswith('num_features') for elem in self.model_extras):
             self.max_features = int(re.sub("[^0-9]", "", match))
-            print(str(self.max_features)+' feature(s) used')
+            print(str(self.max_features) + ' feature(s) used')
             self.model.addConstr(
                 quicksum(self.B[v, f] for f in self.features for v in self.tree.B) == self.max_features)
 
         # regularization
-        if any((match := elem).startswith('regularization') for elem in self.modelextras):
+        if any((match := elem).startswith('regularization') for elem in self.model_extras):
             self.regularization = int(re.sub("[^0-9]", "", match))
-            print('Regularization value of '+str(self.regularization)+' applied at classification vertices')
+            print('Regularization value of ' + str(self.regularization) + ' applied at classification vertices')
             self.model.addConstrs(quicksum(self.S[i, v] for i in self.datapoints) >= self.regularization * self.P[v]
                                   for v in self.tree.V)
 
@@ -602,11 +610,14 @@ class OBCT:
                 self.model.optimize()
 
         if self.model.status == GRB.OPTIMAL:
-            print('Optimal solution found in '+str(round(self.model.Runtime, 2))+'s. ('+str(time.strftime("%I:%M %p", time.localtime()))+')\n')
-        else: print('Time limit reached. ('+str(time.strftime("%I:%M %p", time.localtime()))+')\n')
+            print('Optimal solution found in ' + str(round(self.model.Runtime, 2)) + 's. (' + str(
+                time.strftime("%I:%M %p", time.localtime())) + ')\n')
+        else:
+            print('Time limit reached. (' + str(time.strftime("%I:%M %p", time.localtime())) + ')\n')
 
         # Uncomment to print tree assignments and training set source-terminal path
         # RESULTS.dv_results(self.model, self.tree, self.features, self.classes, self.datapoints)
+        # RESULTS.s_comparison(self.model, self.tree, self.datapoints)
 
         if self.model._numcb > 0:
             self.model._avgcuts = self.model._numcuts / self.model._numcb
