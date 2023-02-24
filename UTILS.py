@@ -1,23 +1,183 @@
 import numpy as np
-import pandas as pd
-import sys
 import networkx as nx
-import csv
+import sys, csv, os, math
 import matplotlib.pyplot as plt
-import os
+from sklearn.compose import ColumnTransformer
+from sklearn.utils.validation import check_is_fitted
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import KBinsDiscretizer, MinMaxScaler, OneHotEncoder
+from data_load import *
 
 
-def get_data(name):
-    # Return dataset from 'name' in Pandas dataframe
-    # dataset located in workspace folder named 'Datasets'
-    # Remove any non-numerical features from dataset
-    global data
-    try:
-        data = pd.read_csv(os.getcwd()+'/Datasets/'+name+'.csv', na_values='?')
-        return data
-    except:
-        print("Dataset Not Found!")
-    return
+def get_data(dataset, binarization=None):
+    dataset2loadfcn = {
+        'balance_scale': load_balance_scale,
+        'banknote': load_banknote_authentication,
+        'blood': load_blood_transfusion,
+        'breast_cancer': load_breast_cancer,
+        'car': load_car_evaluation,
+        'kr_vs_kp': load_chess,
+        'climate': load_climate_model_crashes,
+        'house_votes_84': load_congressional_voting_records,
+        'fico_binary': load_fico_binary,
+        'glass': load_glass_identification,
+        'hayes_roth': load_hayes_roth,
+        'image_segmentation': load_image_segmentation,
+        'ionosphere': load_ionosphere,
+        'iris': load_iris,
+        'monk1': load_monk1,
+        'monk2': load_monk2,
+        'monk3': load_monk3,
+        'parkinsons': load_parkinsons,
+        'soybean_small': load_soybean_small,
+        'spect': load_spect,
+        'tic_tac_toe': load_tictactoe_endgame,
+        'wine_red': load_wine_red,
+        'wine_white': load_wine_white
+    }
+
+    numerical_datasets = ['iris', 'banknote', 'blood', 'climate', 'wine-white', 'wine-red'
+                          'glass', 'image_segmentation', 'ionosphere', 'parkinsons']
+    categorical_datasets = ['balance_scale', 'car', 'kr_vs_kp', 'house_votes_84', 'hayes_roth', 'breast_cancer',
+                            'monk1', 'monk2', 'monk3', 'soybean_small', 'spect', 'tic_tac_toe', 'fico_binary']
+    already_processed = ['fico_binary']
+
+    load_function = dataset2loadfcn[dataset]
+    X, y = load_function()
+    codes, uniques = pd.factorize(y)
+    y = pd.Series(codes, name='target')
+
+    if dataset in already_processed:
+        X_new = X
+    else:
+        if dataset in numerical_datasets:
+            if binarization is None:
+                X_new, ct = preprocess(X, numerical_features=X.columns)
+                X_new = pd.DataFrame(X_new, columns=X.columns)
+            else:
+                X_new, ct = preprocess(X, y=y, binarization=binarization, numerical_features=X.columns)
+                cols = []
+                for key in ct.transformers_[0][1].candidate_thresholds_:
+                    for item in ct.transformers_[0][1].candidate_thresholds_[key]:
+                        cols.append(f"{key}<={item}")
+                X_new = pd.DataFrame(X_new, columns=cols)
+        else:
+            X_new, ct = preprocess(X, categorical_features=X.columns)
+            X_new = pd.DataFrame(X_new, columns=ct.get_feature_names_out(X.columns))
+            X_new.columns = X_new.columns.str.replace('cat__', '')
+    X_new = X_new.astype(int)
+    data_new = pd.concat([X_new, y], axis=1)
+    return data_new
+
+
+def preprocess(X, y=None, numerical_features=None, categorical_features=None, binarization=None):
+    """ Preprocess a dataset.
+
+    Numerical features are scaled to the [0,1] interval by default, but can also
+    be binarized, either by considering all candidate thresholds for a
+    univariate split, or by binning. Categorical features are one-hot encoded.
+
+    Parameters
+    ----------
+    X
+    X_test
+    y_train : pandas Series of training labels, only needed for binarization
+        with candidate thresholds
+    numerical_features : list of numerical features
+    categorical_features : list of categorical features
+    binarization : {'all-candidates', 'binning'}, default=None
+        Binarization technique for numerical features.
+        all-candidates
+            Use all candidate thresholds.
+        binning
+            Perform binning using scikit-learn's KBinsDiscretizer.
+        None
+            No binarization is performed, features scaled to the [0,1] interval.
+
+    Returns
+    -------
+    X_train_new : pandas DataFrame that is the result of binarizing X
+    """
+
+    if numerical_features is None:
+        numerical_features = []
+    if categorical_features is None:
+        categorical_features = []
+
+    numerical_transformer = MinMaxScaler()
+    if binarization == 'all-candidates':
+        numerical_transformer = CandidateThresholdBinarizer()
+    elif binarization == 'binning':
+        numerical_transformer = KBinsDiscretizer(encode='onehot-dense')
+    # categorical_transformer = OneHotEncoder(drop='if_binary', sparse=False, handle_unknown='ignore') # Should work in scikit-learn 1.0
+    categorical_transformer = OneHotEncoder(sparse=False, handle_unknown='ignore')
+    ct = ColumnTransformer([("num", numerical_transformer, numerical_features),
+                            ("cat", categorical_transformer, categorical_features)])
+    X_train_new = ct.fit_transform(X, y)
+
+    return X_train_new, ct
+
+
+class CandidateThresholdBinarizer(TransformerMixin, BaseEstimator):
+    """ Binarize continuous data using candidate thresholds.
+
+    For each feature, sort observations by values of that feature, then find
+    pairs of consecutive observations that have different class labels and
+    different feature values, and define a candidate threshold as the average of
+    these two observations’ feature values.
+
+    Attributes
+    ----------
+    candidate_thresholds_ : dict mapping features to list of thresholds
+    """
+
+    def fit(self, X, y):
+        """ Finds all candidate split thresholds for each feature.
+
+        Parameters
+        ----------
+        X : pandas DataFrame with observations, X.columns used as feature names
+        y : pandas Series with labels
+
+        Returns
+        -------
+        self
+        """
+        X_y = X.join(y)
+        self.candidate_thresholds_ = {}
+        for j in X.columns:
+            thresholds = []
+            sorted_X_y = X_y.sort_values([j, y.name])  # Sort by feature value, then by label
+            prev_feature_val, prev_label = sorted_X_y.iloc[0][j], sorted_X_y.iloc[0][y.name]
+            for idx, row in sorted_X_y.iterrows():
+                curr_feature_val, curr_label = row[j], row[y.name]
+                if (curr_label != prev_label and
+                        not math.isclose(curr_feature_val, prev_feature_val)):
+                    thresh = (prev_feature_val + curr_feature_val) / 2
+                    thresholds.append(thresh)
+                prev_feature_val, prev_label = curr_feature_val, curr_label
+            self.candidate_thresholds_[j] = thresholds
+        return self
+
+    def transform(self, X):
+        """ Binarize numerical features using candidate thresholds.
+
+        Parameters
+        ----------
+        X : pandas DataFrame with observations, X.columns used as feature names
+
+        Returns
+        -------
+        Xb : pandas DataFrame that is the result of binarizing X
+        """
+        check_is_fitted(self)
+        Xb = pd.DataFrame()
+        for j in X.columns:
+            for threshold in self.candidate_thresholds_[j]:
+                binary_test_name = "{}<={}".format(j, threshold)
+                Xb[binary_test_name] = (X[j] <= threshold)
+        Xb.replace({"False": 0, "True": 1}, inplace=True)
+        return Xb
 
 
 def dv_results(model, tree, features, classes, datapoints):
@@ -123,8 +283,7 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file):
              opt_model.model.MIPGap, opt_model.model.ObjVal, opt_model.model.ObjBound, opt_model.modeltype,
              opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
              opt_model.model._cbtime, opt_model.model._mipsoltime, opt_model.model._mipnodetime, opt_model.eps,
-             opt_model.time_limit, rand_state,
-             opt_model.warmstart, opt_model.repeat_use, opt_model.max_features, opt_model.regularization])
+             opt_model.time_limit, rand_state, opt_model.warmstart, opt_model.repeat_use, opt_model.max_features])
         results.close()
 
 
