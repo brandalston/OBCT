@@ -46,7 +46,7 @@ You can call the `model_runs.py` main function within a python file as follows,
 
 ```python
 
-from Benchmark_Methods import model_runs
+import model_runs
 
 data_names = ['soybean-small', 'monk3', 'car', 'iris', 'climate']
 heights = [3, 4, 5]
@@ -89,7 +89,7 @@ You can generate pareto frontiers from within a python file as follows,
 
 ```python
 
-from Benchmark_Methods import pareto_runs
+import pareto_runs
 
 height = 4
 models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
