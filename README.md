@@ -4,7 +4,7 @@ Copyright 2022 Brandon C. Alston, Hamidreza Validi
 
 Code for the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](http://arxiv.org/abs/2206.04857) by Brandon Alston, Hamidreza Validi, and Illya V. Hicks.
 
-This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/) solver. Required python packages are outlined in `requirements.txt`.
+This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and higher) and requires the [Gurobi9.x](https://www.gurobi.com/) solver. Required python3.x packages are outlined in `requirements.txt`.
 
 *** 
 ***
@@ -22,7 +22,7 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 - `pareto_figures/` folder stores the generated `.png` files for experimental results
 - `log_files/` folder stores model `.lp` files and Gurobi `.txt` log files
 - `Datasets/` folder contains the datasets used for generating experimental results
-  - Note: `Datasets/` should also be used as the folder where user dataset `.csv` files are stored
+  - Note: `Datasets/` should also be used as the folder where user dataset files are stored
 
 ***
 ***
@@ -45,9 +45,11 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
 You can call the `model_runs.py` main function within a python file as follows,
 
 ```python
-import model_runs
-data_names = ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc']
-heights = [3,4,5]
+
+from Benchmark_Methods import model_runs
+
+data_names = ['soybean-small', 'monk3', 'car', 'iris', 'climate']
+heights = [3, 4, 5]
 models = ['MCF1', 'MCF2', 'CUT1-ALL', 'CUT2-FRAC-3']
 time_limit = 3600
 extras = ['max_features-25']
@@ -56,13 +58,13 @@ tuning = None
 file = 'test_results.csv'
 consol_log = False
 model_runs.main(
-    ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
-    "-e", extras, "-r", rand_seed, "-c", tuning, "-f", file, "-l", consol_log])
+  ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
+   "-e", extras, "-r", rand_seed, "-c", tuning, "-f", file, "-l", consol_log])
 ```
 
 To run from terminal do the following,
 ```bash
-python3 model_runs.py -d ['soybean-small_enc','monk3_enc','balance-scale_enc','car_evaluation_enc'] -h [3,4,5] -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -e ['max_features-25'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
+python3 model_runs.py -d ['soybean-small','monk3','car','iris','climate'] -h [3,4,5] -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -e ['max_features-25'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
 ```
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column (line 84)
@@ -84,19 +86,22 @@ We assume `-f file` is located in the `\results_files` folder
 - If results output file `-f file` is `None` the `pareto_runs.py` automatically generates a `.csv` results file with the parameters of the function call as the file name saved to the `\results_files` folder
 
 You can generate pareto frontiers from within a python file as follows,
+
 ```python
-import pareto_runs
+
+from Benchmark_Methods import pareto_runs
+
 height = 4
 models = ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
 rand_states = [15, 78, 0]
-data_names = ['hayes-roth_enc', 'house-votes-84_enc']
+data_names = ['hayes_roth', 'house_votes_84']
 file = 'pareto_test.csv'
 pareto_runs.main(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-r", rand_states, "-f", file])
 ```
 
 To run from terminal do the following 
 ```bash
-python3 pareto_runs.py -d ['hayes-roth_enc', 'house-votes-84_enc'] -h 4 -m ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2'] -t 3600 -r [15, 78, 0] -f 'pareto_test.csv'
+python3 pareto_runs.py -d ['hayes_roth', 'house_votes_84'] -h 4 -m ['FOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2'] -t 3600 -r [15, 78, 0] -f 'pareto_test.csv'
 ```
 - Note: `FOCT` must be the model name to generate the pareto frontier of FlowOCT
 ***
@@ -105,13 +110,10 @@ python3 pareto_runs.py -d ['hayes-roth_enc', 'house-votes-84_enc'] -h 4 -m ['FOC
 For understanding model functionality associated with integer and fractional separation procedures in **CUT1** and **CUT2** models, `-e model_extras` and `-c tuning` functionality please refer to the `USAGE.md` file. 
 
 ***
-## Paper Results
-To recreate the results outlined in the [paper](http://arxiv.org/abs/2206.04857) run `paper_results.py`
-
-***
 
 ## Acknowledgments
 The code found in `BendersOCT.py`, `FlowOCT.py`, `FlowOCTTree.py,` and `FlowOCTutils.py` are taken directly from the [Strong Tree](https://github.com/pashew94/StrongTree/) GitHub public repository.
+
 All rights and ownership are to the original owners. 
 
 ***
