@@ -1,5 +1,8 @@
 import pandas as pd
 
+""" We assume the target column of dataset is labeled 'target'
+    Change value at your discretion """
+
 cols_dict = {
         'auto-mpg': ['target', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'model-year',
                      'origin', 'car_name'],
