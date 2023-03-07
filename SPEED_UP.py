@@ -117,14 +117,14 @@ def frac1(model, where):
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
-                    if s_val[i, v] - q_val[i, c] > 10^(-model._eps):
+                    if s_val[i, v] - q_val[i, c] > 10^-model._eps:
                         if model._lazycuts: model.cbLazy(model._S[i, v] <= model._Q[i, c])
                         else: model.cbCut(model._S[i, v] <= model._Q[i, c])
                         model._numcuts += 1
         if 'CUT2' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
-                    if s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^(-model._eps):
+                    if s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^-model._eps:
                         if model._lazycuts: model.cbLazy(model._S[i, v] + gp.quicksum(model._S[i, u] for u in model._child[v]) <= model._Q[i, c])
                         else: model.cbCut(model._S[i, v] + gp.quicksum(model._S[i, u] for u in model._child[v]) <= model._Q[i, c])
                         model._numcuts += 1
@@ -147,7 +147,7 @@ def frac2(model, where):
         if 'CUT1' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
-                    if s_val[i, v] - q_val[i, c] > 10^(-model._eps):
+                    if s_val[i, v] - q_val[i, c] > 10^-model._eps:
                         if model._lazycuts: model.cbLazy(model._S[i, v] <= model._Q[i, c])
                         else: model.cbCut(model._S[i, v] <= model._Q[i, c])
                         model._numcuts += 1
@@ -155,7 +155,7 @@ def frac2(model, where):
         if 'CUT2' in model.ModelName:
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
-                    if s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^(-model._eps):
+                    if s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^-model._eps:
                         if model._lazycuts: model.cbLazy(model._S[i, v] + gp.quicksum(model._S[i, u] for u in model._child[v]) <= model._Q[i, c])
                         else: model.cbCut(model._S[i, v] + gp.quicksum(model._S[i, u] for u in model._child[v]) <= model._Q[i, c])
                         model._numcuts += 1
@@ -181,7 +181,7 @@ def frac3(model, where):
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
                     # if v not reachable through c, add cut
-                    if (s_val[i, v] - q_val[i, c] > 10^(-model._eps) and
+                    if (s_val[i, v] - q_val[i, c] > 10^-model._eps and
                             s_val[i, v] - q_val[i, c] == max(s_val[i, v] - q_val[i, d] for d in model._path[v][1:])):
                         if model._lazycuts: model.cbLazy(model._S[i, v] <= model._Q[i, c])
                         else: model.cbCut(model._S[i, v] <= model._Q[i, c])
@@ -191,7 +191,7 @@ def frac3(model, where):
             for (i, v) in s_val.keys():
                 for c in model._path[v][1:]:
                     # if v not reachable through c, add cut
-                    if (s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^(-model._eps) and
+                    if (s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] > 10^-model._eps and
                             s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, c] ==
                             max(s_val[i, v] + sum(s_val[i, u] for u in model._child[v]) - q_val[i, d] for d in model._path[v][1:])):
                         if model._lazycuts: model.cbLazy(model._S[i, v] + gp.quicksum(model._S[i, u] for u in model._child[v]) <= model._Q[i, c])
