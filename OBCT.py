@@ -73,12 +73,12 @@ class OBCT:
         """
         if 'BOTH' in self.cb_type:
             print('User INT and FRAC lazy cuts')
-            self.eps = -4
+            self.eps = 4
             if 'ROOT' in self.cb_type:
                 self.rootnode = True
             self.tree.Lazycuts = True
         elif 'FRAC' in self.cb_type:
-            self.eps = -4
+            self.eps = 4
             if 'ROOT' in self.cb_type:
                 self.rootnode = True
             print('User FRAC cuts (ROOT: ' + str(self.rootnode) + ')')
