@@ -49,23 +49,15 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
   - `'regularization-k`
 
 Note: `model_extras` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
-
 ***
-## Tuning
-The `-c tuning` parameter is meant for calibrating the number of features used
-  - ex.`-c 'calibration'`
-  - Uses the second objective function as a constraint for calibrating the number of totla branching features
-  - Use a 25% calibration set for calibrating `max_features_k*` parameter
-  - Each `max_features_k-1` DT is used as a warm for the `max_features_k` DT
-  - Use `k`  in [ 1 , B ]
-  - The `max_features_k*` corresponding to best in-sample accuracy is used as the calibrated decision tree
-    - Note: `max_features_k*` replaces any user specified `max_features`
-  - Train full model on 25% calibration set + 50% training set
-  - Warm start full model using calibration + training dataset assignments and assigned tree
+## Bi-objective Modeling
+The -p priority parameter used in our biobjective modeling. A choice of priority between ``data, equal, tree_size`` must be used
+- We hard code a priority values of 10 and 5, giving the former to the priority choice given at the `model_runs.biobjective` function call
+  - ``Equal``, priority value of 5 is given to both
+- Change the hard code of `OBCT.py` to change the priority values
 
-Note: `tuning` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
 
 ***
 ***
 
-![Screenshot](CAAM_logo.png)
+![Screenshot](cmor_logo.png)
