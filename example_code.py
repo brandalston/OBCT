@@ -28,3 +28,24 @@ models = ['MCF1', 'MCF2', 'CUT1-GRB', 'CUT2-ALL']
 seeds = [15, 78, 0]
 data_names = ['hayes_roth', 'house_votes_84']
 model_runs.pareto(["-d", data_names, "-h", 5, "-m", models, "-t", 3600, "-r", seeds, "-f", 'pareto_example.csv'])
+
+
+# call OBCT directly without using model_runs.py functions
+from OBCT import OBCT
+from TREE import TREE
+import UTILS
+from sklearn.model_selection import train_test_split
+
+data = UTILS.get_data('ionosphere')
+rand_state = 15
+train_set, test_set = train_test_split(data, train_size=0.65, random_state=rand_state)
+
+tree = TREE(h=5)
+opt_model = OBCT(data=train_set, tree=tree, target='target', model='CUT1',
+                 time_limit=3600, model_extras=['max_features-25'], warm_start=None)
+opt_model.formulation()
+opt_model.extras()
+opt_model.model.update()
+opt_model.optimization()
+UTILS.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
+                    rand_state=rand_state, results_file=None, data_name='ionosphere')
