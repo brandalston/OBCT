@@ -1,11 +1,11 @@
-from FlowOCTTree import Tree as OCT_Tree
-from FlowOCT import FlowOCT
-import FlowOCTutils
-from BendersOCT import BendersOCT
+from Benchmark_Methods.FlowOCTmain.FlowOCTTree import Tree as OCT_Tree
+from Benchmark_Methods.FlowOCTmain.FlowOCT import FlowOCT
+import Benchmark_Methods.FlowOCTmain.FlowOCTutils as FlowOCTutils
+from Benchmark_Methods.FlowOCTmain.BendersOCT import BendersOCT
 from sklearn.model_selection import train_test_split
 import os, time, getopt, sys, csv
 import pandas as pd
-import UTILS as OU
+import UTILS
 
 
 def main(argv):
@@ -20,10 +20,9 @@ def main(argv):
     log_files = None
 
     try:
-        opts, args = getopt.getopt(argv, "d:h:t:m:r:e:c:f:l:",
+        opts, args = getopt.getopt(argv, "d:h:t:m:r:f:l:",
                                    ["data_files=", "heights=", "timelimit=",
-                                    "models=", "rand_states=", "extras=", "calibration=",
-                                    "results_file=", "log_files"])
+                                    "models=", "rand_states=", "results_file=", "log_files"])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -37,8 +36,6 @@ def main(argv):
             modeltypes = arg
         elif opt in ("-r", "--rand_states"):
             rand_states = arg
-        elif opt in ("-e", "--extras"):
-            model_extras = arg
         elif opt in ("-f", "--results_file"):
             file_out = arg
         elif opt in ("-l", "--log_files"):
@@ -71,20 +68,19 @@ def main(argv):
     ''' We assume the target column of dataset is labeled 'target'
     Change value at your discretion '''
     target = 'target'
-    numerical_datasets = ['iris', 'banknote', 'blood', 'climate', 'wine-white', 'wine-red'
-                                                                                'glass', 'image_segmentation',
-                          'ionosphere', 'parkinsons', 'iris']
+    numerical_datasets = ['iris', 'banknote', 'blood', 'climate', 'wine-white', 'wine-red',
+                          'glass', 'image_segmentation','ionosphere', 'parkinsons', 'iris']
     categorical_datasets = ['balance_scale', 'car', 'kr_vs_kp', 'house-votes-84', 'hayes_roth', 'breast_cancer',
                             'monk1', 'monk2', 'monk3', 'soybean_small', 'spect', 'tic_tac_toe', 'fico_binary']
     for file in data_files:
         if file in numerical_datasets: binarization = 'all-candidates'
         else: binarization = False
         # pull dataset to train model with
-        data = OU.get_data(file.replace('.csv', ''), binarization=binarization)
+        data = UTILS.get_data(file.replace('.csv', ''), binarization=binarization)
         for h in heights:
             for i in rand_states:
                 print('\nDataset: '+str(file)+', H: '+str(h)+', ' 'Rand State: '+str(i)
-                      + '. Run Start: '+str(time.strftime("%I:%M %p", time.localtime())))
+                      + '. Run Start: '+str(time.strftime("%I:%M:%S %p", time.localtime())))
                 train_set, test_set = train_test_split(data, train_size=0.5, random_state=i)
                 cal_set, test_set = train_test_split(test_set, train_size=0.5, random_state=i)
                 model_set = pd.concat([train_set, cal_set])
@@ -109,8 +105,8 @@ def main(argv):
                         print('Optimizing Model')
                         primal.model.optimize()
                         if primal.model.RunTime < time_limit:
-                            print('Optimal solution found in ' + str(round(primal.model.Runtime, 2)) + 's. (' + str(
-                                time.strftime("%I:%M %p", time.localtime())) + ')\n')
+                            print('Optimal solution found in ' + str(round(primal.model.Runtime, 4)) + 's. (' + str(
+                                time.strftime("%I:%M:%S %p", time.localtime())) + ')\n')
                         else:
                             print('Time limit reached. (', time.strftime("%I:%M %p", time.localtime()), ')\n')
                         b_value = primal.model.getAttr("X", primal.b)
@@ -124,7 +120,7 @@ def main(argv):
                                 [file.replace('.csv', ''), h, len(model_set),
                                  test_acc, train_acc, primal.model.Runtime,
                                  primal.model.MIPGap, primal.model.ObjBound, primal.model.ObjVal, modeltype,
-                                 0, 0, 0, 0, 0, 0, 0, time_limit, i, False, False, False])
+                                 time_limit, i, 'N/A', 'N/A'])
                             results.close()
                         if log_files:
                             primal.model.write(log + '.lp')
@@ -140,8 +136,8 @@ def main(argv):
                         print('Optimizing Model')
                         master.model.optimize(FlowOCTutils.mycallback)
                         if master.model.RunTime < time_limit:
-                            print('Optimal solution found in ' + str(round(master.model.Runtime, 2)) + 's. (' + str(
-                                time.strftime("%I:%M %p", time.localtime())) + ')\n')
+                            print('Optimal solution found in ' + str(round(master.model.Runtime, 4)) + 's. (' + str(
+                                time.strftime("%I:%M:%S %p", time.localtime())) + ')\n')
                         else:
                             print('Time limit reached. (', time.strftime("%I:%M %p", time.localtime()), ')\n')
                         b_value = master.model.getAttr("X", master.b)
@@ -154,8 +150,8 @@ def main(argv):
                             results_writer.writerow(
                                 [file.replace('.csv', ''), h, len(model_set),
                                  test_acc, train_acc, master.model.Runtime,
-                                 master.model.MIPGap, master.model.ObjBound, master.model.ObjVal, modeltype,
-                                 0, 0, 0, 0, 0, 0, 0, time_limit, i, False, False, False])
+                                 master.model.MIPGap, master.model.ObjBound, master.model.ObjVal,
+                                 modeltype, time_limit, i, 'N/A', 'N/A'])
                             results.close()
                         if log_files:
                             master.model.write(log + '.lp')

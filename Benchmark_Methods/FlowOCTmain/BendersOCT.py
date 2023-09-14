@@ -63,6 +63,8 @@ class BendersOCT:
         self.model.params.LogToConsole = 0
         # The cuts we add in the callback function would be treated as lazy constraints
         self.model.params.LazyConstraints = 1
+        # self.model.Params.DisplayInterval = 5
+
         '''
         To compare all approaches in a fair setting we limit the solver to use only one thread to merely evaluate 
         the strength of the formulation.

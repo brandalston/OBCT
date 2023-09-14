@@ -15,18 +15,18 @@ def get_node_status(grb_model, b, beta, p, n):
     '''
     This function give the status of a given node in a tree. By status we mean whether the node
         1- is pruned? i.e., we have made a prediction at one of its ancestors
-        2- is a branching node? If yes, what feature do we branch on
+        2- is a Num-Tree-size node? If yes, what feature do we branch on
         3- is a leaf? If yes, what is the prediction at this node?
 
     :param grb_model: the gurobi model solved to optimality (or reached to the time limit)
-    :param b: The values of branching decision variable b
+    :param b: The values of Num-Tree-size decision variable b
     :param beta: The values of prediction decision variable w
     :param p: The values of decision variable p
     :param n: A valid node index in the tree
-    :return: pruned, branching, selected_feature, leaf, value
+    :return: pruned, Num-Tree-size, selected_feature, leaf, value
 
     pruned=1 iff the node is pruned
-    branching = 1 iff the node branches at some feature f
+    Num-Tree-size = 1 iff the node branches at some feature f
     selected_feature: The feature that the node branch on
     leaf = 1 iff node n is a leaf in the tree
     value: if node n is a leaf, value represent the prediction at this node
@@ -54,7 +54,7 @@ def get_node_status(grb_model, b, beta, p, n):
         pruned = True
 
     if n in tree.Nodes:
-        if (pruned == False) and (leaf == False):  # branching
+        if (pruned == False) and (leaf == False):  # Num-Tree-size
             for f in grb_model.cat_features:
                 if b[n, f] > 0.5:
                     selected_feature = f
@@ -65,9 +65,9 @@ def get_node_status(grb_model, b, beta, p, n):
 
 def print_tree(grb_model, b, beta, p):
     '''
-    This function print the derived tree with the branching features and the predictions asserted for each node
+    This function print the derived tree with the Num-Tree-size features and the predictions asserted for each node
     :param grb_model: the gurobi model solved to optimality (or reached to the time limit)
-    :param b: The values of branching decision variable b
+    :param b: The values of Num-Tree-size decision variable b
     :param beta: The values of prediction decision variable w
     :param p: The values of decision variable p
     :return: print out the tree in the console

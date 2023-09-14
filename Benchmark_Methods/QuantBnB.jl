@@ -1,10 +1,3 @@
-#=
-This file is the implementation of the Quant-BnB model found in the paper ''[Quant-BnB: A Scalable Branch-and-Bound Method for Optimal Decision Trees with Continuous Features](https://proceedings.mlr.press/v162/mazumder22a.html)''.
-and publicly available on https://github.com/mengxianglgal/Quant-BnB
-Code is taken directly from https://github.com/mengxianglgal/Quant-BnB
-All rights and ownership are to the original owners.
-=#
-
 include("Quant-BnB-main/QuantBnB-2D.jl")
 include("Quant-BnB-main/QuantBnB-3D.jl")
 include("Quant-BnB-main/gen_data.jl")
@@ -17,12 +10,11 @@ using CSV, Tables, DataFrames, Dates
 cols = ["Data","H","|I|","Out-Acc","In-Acc","Sol-Time","Gap","ObjVal","ObjBound","Model","# CB",
         "User Cuts","Cuts/CB", "CB-Time", "INT-CB-time","FRAC-CB-TIME","CB-Eps","Time Limit",
         "Rand. State","Warm Start","Single Feature Use","Max Features"]
-outfile = pwd()*"/results_files/abcd.csv"
-timelimit = 600
+outfile = pwd()*"/results_files/paper_results.csv"
+timelimit = 3600
 rand_states = [138, 15, 89, 42, 0]
-heights = [2]
-datasets = ["iris"]
-rand_states = [138]
+heights = [5]
+datasets = ["ionosphere"]
 
 summary = DataFrame([name => [] for name in cols])
 for file in datasets
@@ -46,7 +38,7 @@ for file in datasets
                     print("Time limit reached. ","(", Dates.format(now(), "HH:MM"),")")
             end
             push!(summary, [file, h, size(X_train)[1], 1-opt_test/size(X_test)[1], 1-opt_train/size(X_train)[1], opt_time,
-            "N/A", "N/A", "N/A", "QuantBnB", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", timelimit, seed, "N/A", "N/A", "N/A"])
+            "N/A", "N/A", "N/A", "QuantBnB", timelimit, seed, "N/A", "N/A"])
             CSV.write(outfile, last(summary,1),append=true)
         end
     end

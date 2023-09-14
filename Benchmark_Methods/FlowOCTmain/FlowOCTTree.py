@@ -7,7 +7,7 @@ All rights and ownership are to the original owners.
 In this class we create a structure to hold the classification/regression tree.
 We need following requirements:
     0- An easy way for user to create the tree
-    1- The set of branching nodes
+    1- The set of Num-Tree-size nodes
     2- The set of Leaves
     3- For each node we need to get the index of left/right children and the parent
 

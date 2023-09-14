@@ -7,9 +7,9 @@ All rights and ownership are to the original owners.
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import time, pathlib, csv, getopt, sys
+import time, pathlib, csv, getopt, sys, os
 from sklearn.ensemble import GradientBoostingClassifier
-from gosdt.model.threshold_guess import compute_thresholds
+from gosdt.model.threshold_guess import compute_thresholds, cut
 from gosdt.model.gosdt import GOSDT
 import UTILS as OU
 
@@ -45,7 +45,7 @@ def main(argv):
                        'Num_CB', 'User_Cuts', 'Cuts_per_CB',
                        'Total_CB_Time', 'INT_CB_Time', 'FRAC_CB_Time', 'CB_Eps',
                        'Time_Limit', 'Rand_State', 'Calibration', 'Single_Feature_Use', 'Max_Features']
-    output_path = 'results_files/'
+    output_path = os.getcwd()+'/results_files/'
     if file_out is None:
         output_name = str(data_files) + '_H:' + str(heights) + '_GOSDT+g.5' + \
                       '_T:' + str(time_limit) + '.csv'
@@ -63,7 +63,7 @@ def main(argv):
         for h in heights:
             for seed in rand_states:
                 print('\nGOSDT+g. Dataset: ' + str(file) + ', H: ' + str(h) + ', Rand State: ' + str(seed) + '. Run Start: ' +
-                      str(time.strftime("%I:%M %p", time.localtime())))
+                      str(time.strftime("%I:%M:%S %p", time.localtime())))
                 # data split
                 train_set, test_set = train_test_split(data, train_size=0.75, random_state=seed)
                 X_train, Y_train = train_set.drop('target', axis=1), train_set['target']
@@ -73,6 +73,10 @@ def main(argv):
                 n_est = 40
                 model_x_train, thresholds, header, threshold_guess_time = compute_thresholds(X_train, Y_train, n_est, h)
                 model_y_train = pd.DataFrame(Y_train)
+                model_x_test = cut(X_test.copy(), thresholds)
+                model_x_test = model_x_test[header]
+                model_y_test = pd.DataFrame(Y_test)
+
                 # guess lower bound
                 start_time = time.perf_counter()
                 clf = GradientBoostingClassifier(n_estimators=n_est, max_depth=h, random_state=seed)
@@ -86,6 +90,7 @@ def main(argv):
                 labelpath = labelsdir / 'warm_label.tmp'
                 labelpath = str(labelpath)
                 pd.DataFrame(warm_labels, columns=["class_labels"]).to_csv(labelpath, header="class_labels", index=None)
+
                 # initialize GOSDT, train and predict
                 config = {
                     "regularization": 1 / len(model_x_train),
@@ -101,19 +106,17 @@ def main(argv):
                 start = time.perf_counter()
                 model = GOSDT(config)
                 model.fit(model_x_train, model_y_train)
-                print(model.tree)
                 model_time = time.perf_counter() - start
+
                 if model_time + lb_time < time_limit:
                     print('Optimal solution found in '+str(round(model_time+lb_time, 4))+'s. '+'('+
                           str(time.strftime("%I:%M %p", time.localtime()))+')')
                 else:
-                    print('Time limit reached. '+str(time.strftime("%I:%M %p", time.localtime())))
+                    print('Time limit reached. '+str(time.strftime("%I:%M:%S %p", time.localtime())))
                 with open(out_file, mode='a') as results:
                     results_writer = csv.writer(results, delimiter=',', quotechar='"')
                     results_writer.writerow(
                         [file.replace('.csv', ''), h, len(train_set),
-                         model.score(X_test, Y_test), model.score(X_train, Y_train), model_time + lb_time,
-                         'N/A', 'N/A', 'N/A', 'GOSDT+g', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', time_limit,
-                         seed,
-                         'N/A', 'N/A', 'N/A'])
+                         model.score(model_x_test, model_y_test), model.score(model_x_train, model_y_train), model_time + lb_time,
+                         'N/A', 'N/A', 'N/A', 'GOSDT+g', time_limit, seed, 'SVM', 0])
                     results.close()
