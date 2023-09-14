@@ -1,16 +1,13 @@
 import pandas as pd
 
-""" We assume the target column of dataset is labeled 'target'
-    Change value at your discretion """
-
 cols_dict = {
         'auto-mpg': ['target', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'model-year',
                      'origin', 'car_name'],
-        'balance_scale': ['target', 'left-weight', 'left-distance', 'right-weight', 'right-distance'],
+        'balance-scale': ['target', 'left-weight', 'left-distance', 'right-weight', 'right-distance'],
         'banknote_authentication': ['variance-of-wavelet', 'skewness-of-wavelet', 'curtosis-of-wavelet', 'entropy',
                                     'target'],
         'blood_transfusion': ['R', 'F', 'M', 'T', 'target'],
-        'breast_cancer': ['target', 'age', 'menopause', 'tumor-size', 'inv-nodes', 'node-caps', 'deg-malig',
+        'breast-cancer': ['target', 'age', 'menopause', 'tumor-size', 'inv-nodes', 'node-caps', 'deg-malig',
                           'breast', 'breast-quad', 'irradiat'],
         'car': ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'target'],
         'climate': ['Study', 'Run', 'vconst_corr', 'vconst_2', 'vconst_3', 'vconst_4', 'vconst_5', 'vconst_7',
@@ -25,7 +22,7 @@ cols_dict = {
                    'c-target', 'm-target', 'x-target'],
         'glass': ['RI', 'Na', 'Mg', 'Al', 'Si', 'K', 'Ca', 'Ba', 'Fe', 'target'],
         'hayes-roth': ['name', 'hobby', 'age', 'educational-level', 'marital-status', 'target'],
-        'house_votes_84': ['target', 'handicapped-infants', 'water-project-cost-sharing',
+        'house-votes-84': ['target', 'handicapped-infants', 'water-project-cost-sharing',
                            'adoption-of-the-budget-resolution', 'physician-fee-freeze', 'el-salvador-aid',
                            'religious-groups-in-schools', 'anti-satellite-test-ban', 'aid-to-nicaraguan-contras',
                            'mx-missile', 'immigration', 'synfuels-corporation-cutback', 'education-spending',
@@ -50,13 +47,13 @@ cols_dict = {
                        'Shimmer:APQ3', 'Shimmer:APQ5', 'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'target', 'RPDE',
                        'DFA', 'spread1', 'spread2', 'D2', 'PPE'],
         'soybean-small': list(range(1, 36)) + ['target'],
-        'tic_tac_toe': ['top-left-square', 'top-middle-square', 'top-right-square', 'middle-left-square',
+        'tic-tac-toe': ['top-left-square', 'top-middle-square', 'top-right-square', 'middle-left-square',
                         'middle-middle-square', 'middle-right-square', 'bottom-left-square', 'bottom-middle-square',
                         'bottom-right-square', 'target'],
-        'wine_red': ['fixed-acidity', 'volatile-acidity', 'citric-acid', 'residual-sugar', 'chlorides',
+        'wine-red': ['fixed-acidity', 'volatile-acidity', 'citric-acid', 'residual-sugar', 'chlorides',
                      'free-sulfur dioxide', 'total-sulfur-dioxide', 'density', 'pH', 'sulphates', 'alcohol',
                      'target'],
-        'wine_white': ['fixed-acidity', 'volatile-acidity', 'citric-acid', 'residual-sugar', 'chlorides',
+        'wine-white': ['fixed-acidity', 'volatile-acidity', 'citric-acid', 'residual-sugar', 'chlorides',
                        'free-sulfur dioxide', 'total-sulfur-dioxide', 'density', 'pH', 'sulphates', 'alcohol',
                        'target']
     }
@@ -244,10 +241,10 @@ def load_hayes_roth():
     https://archive.ics.uci.edu/ml/datasets/Hayes-Roth
     """
     df_train = pd.read_csv("Datasets/hayes_roth.data",
-                           names=["name", "hobby", "age", "educational level", "marital status", "target"],
-                           index_col="name")
+                     names=["name", "hobby", "age", "educational level", "marital status", "target"],
+                     index_col="name")
     df_test = pd.read_csv("Datasets/hayes_roth.test",
-                          names=["hobby", "age", "educational level", "marital status", "target"])
+                     names=["hobby", "age", "educational level", "marital status", "target"])
     df = pd.concat([df_test, df_train], ignore_index=True)
     y = df["target"]
     X = df.drop(columns="target")
