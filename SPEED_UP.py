@@ -10,6 +10,24 @@ import gurobipy as gp
 from gurobipy import GRB
 import time
 
+
+def biobj(model, where):
+    if where == GRB.Callback.MULTIOBJ:
+        model._obj_count = model.cbGet(GRB.Callback.MULTIOBJ_OBJCNT)
+        print('Objective(s) optimized:', model.cbGet(GRB.Callback.MULTIOBJ_OBJCNT),
+              '     Solution(s) found:', model.cbGet(GRB.Callback.MULTIOBJ_SOLCNT),
+              '    Time Elapsed:', model.cbGet(GRB.Callback.RUNTIME))
+        if where == GRB.Callback.MIPSOL:
+            # new_solution = (model.cbGetSolution(model._B), model.cbGetSolution(model._W))
+            new_solution = model.cbGetSolution(model._vars)
+            # Ensure that this is a new solution not a MIPStart for the next objective
+            if new_solution not in model._solutions:
+                time = model.cbGet(GRB.Callback.RUNTIME)
+                print(f"Found a new solution at time {time} while optimizing objective #{model._obj_count + 1}")
+                model._solutions.append(new_solution)
+        print('Set of solutions:',model._solutions)
+
+
 def frac1(model, where):
     # Add all violating FRAC cuts in 1,v path of datapoint terminal node in branch and bound tree
     if (where == GRB.Callback.MIPNODE) and (model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL):

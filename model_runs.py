@@ -117,7 +117,7 @@ def main(argv):
                             cal_model.model.update()
                             print('test:', round(cal_lambda, 2), 'start:',
                                   str(time.strftime("%I:%M:%S %p", time.localtime())))
-                            if 'MCF' or 'OCT' in modeltype: cal_model.model.optimize()
+                            if 'MCF' or 'Flow' in modeltype: cal_model.model.optimize()
                             if 'Benders' in modeltype:
                                 cal_model.model.Params.LazyConstraints = 1
                                 cal_model.model.optimize(SPEED_UP.bendersoct)
