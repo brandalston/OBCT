@@ -287,9 +287,9 @@ def model_summary(opt_model, tree, test_set, rand_state, results_file, data_name
                 [data_name, tree.height, len(opt_model.datapoints),
                  test_acc / len(test_set), train_acc / len(opt_model.datapoints), opt_model.model.Runtime,
                  opt_model.model.MIPGap, opt_model.model.ObjVal, opt_model.model.ObjBound, opt_model.modeltype,
-                 opt_model.time_limit, rand_state, opt_model.warmstart, opt_model.warmstart_time,
-                 opt_model.eps, opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._avgcuts,
-                 opt_model.model._cbtime, opt_model.model._mipnodetime, opt_model.model._mipsoltime,
+                 opt_model.warmstart['use'], opt_model.branch_weight, opt_model.warmstart['time'], rand_state, opt_model.time_limit,
+                 opt_model.model._numcb, opt_model.model._numcuts, opt_model.model._cbtime,
+                 opt_model.model._mipnodetime, opt_model.model._mipsoltime,
                  opt_model.max_features, opt_model.repeat_use, opt_model.regularization])
             results.close()
     else:

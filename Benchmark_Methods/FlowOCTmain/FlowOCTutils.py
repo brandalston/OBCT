@@ -327,3 +327,64 @@ def mycallback(model, where):
         if added_cut == 1:
             model._callback_counter_integer_success += 1
             model._total_callback_time_integer_success += func_time
+
+    def get_tree_topology(values_dict):
+        tree = values_dict['model'].tree
+        mode = values_dict['model'].mode
+        pruned = []
+        branching = {}
+        leaf = {}
+        for n in tree.Nodes + tree.Leaves:
+            leaf_node, pruned_node = False, False
+            p_sum = 0
+            for m in tree.get_ancestors(n):
+                p_sum = p_sum + values_dict['p'][m]
+            if values_dict['p'][n] > 0.5:  # leaf
+                leaf_node = True
+                if mode == "regression":
+                    leaf[n] = 1
+                elif mode == "classification":
+                    for k in values_dict['model'].labels:
+                        if values_dict['beta'][n, k] > 0.5:
+                            leaf[n] = k
+            elif p_sum == 1:  # Pruned
+                pruned.append(n)
+                pruned_node = True
+
+            if n in tree.Nodes:
+                if (pruned_node == False) and (leaf_node == False):  # Num-Tree-size
+                    for f in values_dict['model'].cat_features:
+                        if values_dict['b'][n, f] > 0.5:
+                            branching[n] = f
+        return branching, leaf, pruned
+
+
+def get_tree_topology(values_dict):
+    tree = values_dict['model'].tree
+    mode = values_dict['model'].mode
+    pruned = []
+    branching = {}
+    leaf = {}
+    for n in tree.Nodes+tree.Leaves:
+        leaf_node, pruned_node = False, False
+        p_sum = 0
+        for m in tree.get_ancestors(n):
+            p_sum = p_sum + values_dict['p'][m]
+        if values_dict['p'][n] > 0.5:  # leaf
+            leaf_node = True
+            if mode == "regression":
+                leaf[n] = 1
+            elif mode == "classification":
+                for k in values_dict['model'].labels:
+                    if values_dict['beta'][n, k] > 0.5:
+                        leaf[n] = k
+        elif p_sum == 1:  # Pruned
+            pruned.append(n)
+            pruned_node = True
+
+        if n in tree.Nodes:
+            if (pruned_node == False) and (leaf_node == False):  # Num-Tree-size
+                for f in values_dict['model'].cat_features:
+                    if values_dict['b'][n, f] > 0.5:
+                        branching[n] = f
+    return branching, leaf, pruned

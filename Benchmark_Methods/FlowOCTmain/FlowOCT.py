@@ -66,8 +66,8 @@ class FlowOCT:
         To compare all approaches in a fair setting we limit the solver to use only one thread to merely evaluate 
         the strength of the formulation.
         '''
-        self.model.params.TimeLimit = time_limit
         self.model.params.LogToConsole = 0
+        self.model.params.TimeLimit = time_limit
         self.model.params.Threads = 1
 
         '''
@@ -174,7 +174,6 @@ class FlowOCT:
                 (self.beta[n, 1] <= self.p[n]) for n in
                 self.tree.Nodes + self.tree.Leaves)
 
-
         for n in self.tree.Leaves:
             self.model.addConstrs(self.zeta[i, n] == self.z[i, n] for i in self.datapoints)
 
@@ -188,3 +187,24 @@ class FlowOCT:
                 obj.add(-1 * self._lambda * self.b[n, f])
 
         self.model.setObjective(obj, GRB.MAXIMIZE)
+
+    def warm_start(self, b_ws, beta_ws, p_ws):
+        for n in b_ws:
+            self.p[n].Start = 0
+            for f in self.cat_features:
+                if b_ws[n] == f: self.b[n, f].Start = 1.0
+                else: self.b[n, f].Start = 0
+            for k in self.labels: self.beta[n, k].Start = 0.0
+        for n in beta_ws:
+            self.p[n].Start = 1
+            for k in self.labels:
+                if beta_ws[n] == k: self.beta[n, k].Start = 1.0
+                else: self.beta[n, k].Start = 0
+            # for f in self.cat_features: self.b[n, f].Start = 0.0
+        """
+        if len(p_ws) > 0:
+            for n in p_ws:
+                self.p[n].Start = 0
+                for k in self.labels: self.beta[n, k].Start = 0
+                for f in self.cat_features: self.b[n, f].Start = 0
+        """

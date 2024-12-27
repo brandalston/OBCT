@@ -1,10 +1,12 @@
 from gurobipy import *
-import SPEED_UP, UTILS, time
+import SPEED_UP
+import time
+import UTILS
 
 
 class OBCT:
 
-    def __init__(self, data, tree, model, time_limit, target,
+    def __init__(self, data, tree, model, time_limit, target, name, weight=0,
                  priority=None, warm_start=None, model_extras=None, log=None):
         """
         Parameters
@@ -25,16 +27,14 @@ class OBCT:
         self.data = data
         self.target = target
         self.datapoints = data.index
+        self.dataname = name
         self.model_extras = model_extras
         self.time_limit = time_limit
         self.log = log
         self.priority = priority
-        self.warmstart_time = 0
-        self.max_features = 0
-        self.repeat_use = False
-        self.regularization = 0
+        self.warmstart = warm_start
+        self.branch_weight = weight
 
-        print('Model: ' + str(self.modeltype))
         # Binary Encoded Feature Set and Class Set
         self.features = self.data.columns[self.data.columns != self.target]
         self.classes = data[target].unique()
@@ -58,8 +58,8 @@ class OBCT:
         # Gurobi optimization parameters
         self.cb_type = self.modeltype[5:]
         if 'CUT' in self.modeltype and len(self.cb_type) == 0:
-            self.cb_type = 'GRB'
-        self.tree.Lazycuts = False
+            self.cb_type = 'ALL'
+        self.Lazycuts = False
         self.rootnode = False
         self.eps = 0
         self.cut_constraint = 0
@@ -75,28 +75,29 @@ class OBCT:
         All integral lazy cuts are added only at the root node of the branch and bound tree (Lazy = 3 parameter in GRB)
         """
         if 'BOTH' in self.cb_type:
-            print('User INT and FRAC lazy cuts')
             self.eps = 4
             if 'ROOT' in self.cb_type:
                 self.rootnode = True
             self.tree.Lazycuts = True
         elif 'FRAC' in self.cb_type:
+            # print('fractional separation', self.cb_type)
             self.eps = 4
             if 'ROOT' in self.cb_type:
                 self.rootnode = True
-            print('User FRAC cuts (ROOT: ' + str(self.rootnode) + ')')
-        elif 'INT' in self.cb_type:
-            print('User INT lazy = 3 cuts')
-        elif 'ALL' in self.cb_type:
-            print('ALL integral connectivity constraints upfront')
-        elif 'GRB' in self.cb_type:
-            print('GRB lazy = 3 constraints')
-        if self.priority is not None: print('Bi-objective Model, priority:', self.priority)
+        """elif 'INT' in self.cb_type: pass
+            # print('User INT lazy = 3 cuts')
+        elif 'ALL' in self.cb_type: pass
+            # print('ALL integral connectivity constraints upfront')
+        elif 'GRB' in self.cb_type: pass
+            # print('GRB lazy = 3 constraints')"""
+        if self.priority is not None: print('Bibjective priority:', self.priority)
 
         # Gurobi model
         self.model = Model(f'{self.modeltype}')
-        self.model.setParam(GRB.Param.OutputFlag, 0)
+        # self.model.setParam(GRB.Param.OutputFlag, 1)
+        self.model.Params.LogToConsole = 0
         self.model.Params.TimeLimit = time_limit
+        # self.model.Params.DisplayInterval = 5
         # Use only 1 thread for testing purposes
         self.model.Params.Threads = 1
         # Save Gurobi log to file
@@ -104,23 +105,18 @@ class OBCT:
             self.model.Params.LogFile = self.log
             if self.priority is not None:
                 self.model.Params.SolFiles = self.log + '_solfiles'
+        # if 'MCF' or 'OCT' in self.modeltype:
+        # self.model.params.LazyConstraints = 1
 
         # CUT-1,2 model callback metrics
         self.model._numcuts, self.model._numcb, self.model._cbtime, self.model._CB_iter = 0, 0, 0, 0
         self.model._mipsoltime, self.model._mipnodetime, self.model._eps = 0, 0, self.eps
-        self.model._cuttype, self.model._lazycuts, self.model._rootnode = self.cb_type, self.tree.Lazycuts, self.rootnode
+        self.model._cuttype, self.model._lazycuts, self.model._rootnode = self.cb_type, self.Lazycuts, self.rootnode
         self.model._modeltype, self.model._path, self.model._child = self.modeltype, self.tree.path, self.tree.child
+        # Biobjective metrics
         self.model._biobjruntimes, self.model._biobjsolcount, self.model._biobjobjcount = {}, 0, 0
         self.model._incorrect, self.model._tree_size, self.model._obj_count = 0, 0, 0
         self.model._solutions, self.model._vars = [], self.model.getVars()
-
-        # Warm start (if applicable)
-        if warm_start is not None:
-            self.warmstart = True
-            self.wsv = warm_start
-            self.calibration = 'warm_start'
-        else:
-            self.warmstart = False
 
     ###########################################
     # MIP FORMULATIONS
@@ -146,17 +142,20 @@ class OBCT:
         if self.priority is not None:
             # self.model.ModelSense = GRB.MINIMIZE
             p1, p2 = 10, 5
-            if 'equal' == self.priority: p1 = 5
-            elif 'tree_size' == self.priority: p1, p2 = 5, 10
+            if 'equal' == self.priority:
+                p1 = 5
+            elif 'tree_size' == self.priority:
+                p1, p2 = 5, 10
             self.model.setObjectiveN(quicksum(1 - quicksum(self.S[i, v] for v in self.tree.V if v != 0)
                                               for i in self.datapoints), index=0, priority=p1, name="classification")
             self.model.setObjectiveN(quicksum(self.B[v, f] for v in self.tree.B for f in self.features),
                                      index=1, priority=p2, name="tree_size")
         else:
             self.model.setObjective(
-                quicksum(self.S[i, v] for i in self.datapoints for v in self.tree.V if v != 0),
+                (1 - self.branch_weight) * quicksum(
+                    self.S[i, v] for i in self.datapoints for v in self.tree.V if v != 0)
+                - self.branch_weight * quicksum(self.B[v, f] for v in self.tree.B for f in self.features),
                 GRB.MAXIMIZE)
-
         # Pruned vertices not assigned to class
         # P[v] = sum(W[v,k], k in K) for v in V
         self.model.addConstrs(self.P[v] == quicksum(self.W[v, k] for k in self.classes)
@@ -174,11 +173,33 @@ class OBCT:
             for f in self.features:
                 self.B[v, f].ub = 0
 
-        # Terminal vertex of datapoint matches datapoint class
+        """
+        # Terminal vertex of datapoint matches datapoint class (not applicable to Benders decomposition of MCF2)
         # S[i,v] <= W[v,y_i=k] for v in V, k in K
-        for v in self.tree.V:
-            self.model.addConstrs(self.S[i, v] <= self.W[v, self.data.at[i, self.target]]
+        if 'Benders' not in self.modeltype:
+            for v in self.tree.V:
+                self.model.addConstrs(self.S[i, v] <= self.W[v, self.data.at[i, self.target]]
+                                      for i in self.datapoints)
+
+        # Benders Model Connectivity Constraints
+        if 'Benders' in self.modeltype:
+            # Source-terminal vertex vars
+            self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
+            # each datapoint has at most one terminal vertex
+            # sum(s[i, v] for v in V]) == 1 for i in I
+            self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
                                   for i in self.datapoints)
+            for v in self.tree.B:
+                for u in self.tree.DG_prime.neighbors(v):
+                    if u % 2 == 1:
+                        self.model.addConstrs(
+                            self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 0)
+                            for i in self.datapoints)
+                    elif u % 2 == 0:
+                        self.model.addConstrs(
+                            self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
+                            for i in self.datapoints)
+        """
 
         """ MCF1 Model Connectivity Constraints """
         if 'MCF1' in self.modeltype:
@@ -212,7 +233,7 @@ class OBCT:
                         self.S[i, v] + quicksum(self.Z[i, v, u] for u in self.tree.DG.neighbors(v) if v < u) ==
                         self.T[i] for i in self.datapoints)
 
-            # left right Num-Tree-size for vertices selected in 1-t path for datapoint
+            # left right Num-Tree-size for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
             # q[i,r(v)] <= sum(b[v,f], f if x[i,f]=1) for all i in I, v in N
             for v in self.tree.B:
@@ -229,8 +250,8 @@ class OBCT:
         """ MCF2 Model Connectivity Constraints """
         if 'MCF2' in self.modeltype:
             # Flow vars
-            self.Z = self.model.addVars(self.datapoints, self.tree.V, self.tree.DG_prime.edges,
-                                        vtype=GRB.CONTINUOUS, lb=0, name='Z')
+            self.Z = self.model.addVars(self.datapoints, self.tree.V, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS,
+                                        lb=0, name='Z')
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
 
@@ -269,7 +290,7 @@ class OBCT:
                 if v == 0: continue
                 self.model.addConstrs(self.Z[i, v, self.tree.path[v][-2], v] == self.S[i, v] for i in self.datapoints)
 
-            # left right Num-Tree-size for vertices selected in 1-v path for datapoint
+            # left right Num-Tree-size for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
             # q[i,r(v)] <= sum(b[v,f], f if x[i,f]=1) for all i in I, v in N
             for v in self.tree.B:
@@ -293,9 +314,10 @@ class OBCT:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
 
-            # left right branching for vertices selected in 1-v path for datapoint
+            # left right Num-Tree-size for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
             # q[i,r(v)] <= sum(b[v,f], f if x[i,f]=1) for all i in I, v in N
+            # if (self.model_extras is None) or ('conflict_constraints' not in self.model_extras):
             for v in self.tree.B:
                 for u in self.tree.DG_prime.neighbors(v):
                     if u % 2 == 1:
@@ -376,7 +398,7 @@ class OBCT:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.CONTINUOUS, name='Q')
 
-            # left right Num-Tree-size for vertices selected in 1-v path for datapoint
+            # left right Num-Tree-size for vertices selected in 0-t path for datapoint
             # q[i,l(v)] <= sum(b[v,f], f if x[i,f]=0) for all i in I, v in N
             # q[i,r(v)] <= sum(b[v,f], f if x[i,f]=1) for all i in I, v in N
             for v in self.tree.B:
@@ -456,104 +478,55 @@ class OBCT:
                         self.model.addConstrs(self.S[i, v] + quicksum(self.S[i, u] for u in self.tree.child[v]) <=
                                               self.Q[i, c] for c in self.tree.path[v][1:])
 
-        """ FlowOCT Model Connectivity Constraints (only used for Pareto Frontier Purposes) """
-        if 'FlowOCT' in self.modeltype:
-            # Flow vars
-            self.Z = self.model.addVars(self.datapoints, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS, lb=0, name='Z')
-            # Flow generator at node zero vars
-            self.GEN = self.model.addVars(self.datapoints, lb=0.0, ub=1.0, vtype=GRB.CONTINUOUS, name='G')
-
-            # generate flow at root vertex, flow conservation at non-leaf vertices
-            for v in self.tree.V:
-                if v != 0:
-                    self.model.addConstrs(quicksum(self.Z[i, u, v] for u in list(self.tree.DG.neighbors(v)) if u < v) ==
-                                          quicksum(self.Z[i, v, u] for u in list(self.tree.DG.neighbors(v)) if v < u) +
-                                          self.S[i, v]
-                                          for i in self.datapoints)
-                else:
-                    self.model.addConstrs(quicksum(self.Z[i, v, u] for u in list(self.tree.DG.neighbors(v)) if v < u) +
-                                          self.S[i, v] == self.GEN[i]
-                                          for i in self.datapoints)
-
-            # flow conservation at leaf vertices
-            for n in self.tree.L:
-                for (u, v) in list(self.tree.DG_prime.edges(n)):
-                    self.model.addConstrs(self.Z[i, u, v] == self.S[i, v] for i in self.datapoints)
-
-            # left right Num-Tree-size for vertices selected in s-t path for datapoint
-            for v in self.tree.B:
-                for (u, n) in list(self.tree.DG_prime.edges(v)):
-                    if n % 2 == 1:
-                        self.model.addConstrs(
-                            self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 0)
-                            for i in self.datapoints)
-                    elif n % 2 == 0:
-                        self.model.addConstrs(
-                            self.Z[i, v, n] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
-                            for i in self.datapoints)
-
         # pass to model DV for callback purposes
-        self.model._Q = self.Q
-        self.model._S = self.S
         self.model._B = self.B
         self.model._W = self.W
         self.model._P = self.P
+        self.model._S = self.S
+        self.model._Q = self.Q
         self.model._modeltype = self.model
+        self.model._master = self
+        self.model._tree = self.tree
+
+    @staticmethod
+    def empty_callback(model, where):
+        return
 
     ###########################################
-    # Model Optimization
+    # Model Extras
     ###########################################
-    def optimization(self):
-        print(f'Optimizing model')
-        # Solve model with callback if applicable
-        if self.priority is not None:
-            self.model.optimize()
-        else:
-            if 'MCF' or 'OCT' in self.modeltype:
-                self.model.optimize()
-            if 'CUT' in self.modeltype:
-                if 'FRAC' in self.cb_type:
-                    # User cb.Cut FRAC S-Q cuts
-                    self.model.Params.PreCrush = 1
-                    if '1' in self.cb_type: self.model.optimize(SPEED_UP.frac1)
-                    if '2' in self.cb_type: self.model.optimize(SPEED_UP.frac2)
-                    if '3' in self.cb_type: self.model.optimize(SPEED_UP.frac3)
-                if 'BOTH' in self.cb_type:
-                    # User cb.Lazy FRAC and INT S-Q cuts
-                    self.model.Params.LazyConstraints = 1
-                    self.model.Params.PreCrush = 1
-                    self.model.optimize(SPEED_UP.both)
-                if 'INT' in self.cb_type:
-                    # User cb.Lazy INT S-Q cuts
-                    self.model.Params.LazyConstraints = 1
-                    if '1' in self.cb_type: self.model.optimize(SPEED_UP.int1)
-                    if '2' in self.cb_type: self.model.optimize(SPEED_UP.int2)
-                    if '3' in self.cb_type: self.model.optimize(SPEED_UP.int3)
-                if 'GRB' in self.cb_type:
-                    self.model.optimize()
-                if 'ALL' in self.cb_type:
-                    self.model.optimize()
+    def extras(self):
+        # feature used once
+        if any((match := elem).startswith('repeat_use') for elem in self.model_extras):
+            self.repeat_use = int(re.sub("[^0-9]", "", match))
+            print(f'Each feature used at most {self.repeat_use} times')
+            self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= self.repeat_use for f in self.features)
 
-        if self.model.status == GRB.OPTIMAL:
-            print(f'Optimal solution found in {round(self.model.Runtime, 4)}s '
-                  f'({time.strftime("%I:%M:%S %p", time.localtime())})')
-        else:
-            print(f'Time limit reached. ({time.strftime("%I:%M:%S %p", time.localtime())})')
+        # number of maximum Num-Tree-size nodes
+        if any((match := elem).startswith('max_features') for elem in self.model_extras):
+            self.max_features = int(re.sub("[^0-9]", "", match))
+            print(f'No more than {self.max_features} feature(s) used')
+            self.model.addConstr(
+                quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
 
-        # Uncomment to print tree assignments and training set source-terminal path
-        # RESULTS.dv_results(self.model, self.tree, self.features, self.classes, self.datapoints)
-        # RESULTS.s_comparison(self.model, self.tree, self.datapoints)
+        # exact number of Num-Tree-size nodes
+        if any((match := elem).startswith('num_features') for elem in self.model_extras):
+            self.max_features = int(re.sub("[^0-9]", "", match))
+            print(f'{self.max_features} feature(s) used')
+            self.model.addConstr(
+                quicksum(self.B[v, f] for f in self.features for v in self.tree.B) == self.max_features)
 
-        if self.model._numcb > 0:
-            self.model._avgcuts = self.model._numcuts / self.model._numcb
-        else:
-            self.model._avgcuts = 0
+        # regularization
+        if any((match := elem).startswith('regularization') for elem in self.model_extras):
+            self.regularization = int(re.sub("[^0-9]", "", match))
+            print(f'Regularization value of {self.regularization} applied at classification vertices')
+            self.model.addConstrs(quicksum(self.S[i, v] for i in self.datapoints) >= self.regularization * self.P[v]
+                                  for v in self.tree.V)
 
     ###########################################
     # Model Warm Start
     ###########################################
     def warm_start(self):
-        print('Updating model with warm start values')
         # Tree Assignment Warm Start Values
         # For each node in the warm start tree
         #    If Num-Tree-size node
@@ -567,28 +540,29 @@ class OBCT:
         #    If pruned node
         #       all classes and features = 0
         #       pruned activation = 0
-
         for v in self.tree.V:
-            if 'branch on feature' in self.wsv['tree'].DG_prime.nodes[v]:
+            if 'branch on feature' in self.warmstart['tree'].DG_prime.nodes[v]:
                 for f in self.features:
-                    if f == self.wsv['tree'].DG_prime.nodes[v]['branch on feature']:
+                    if f == self.warmstart['tree'].DG_prime.nodes[v]['branch on feature']:
                         self.B[v, f].Start = 1.0
                     else:
                         self.B[v, f].Start = 0.0
                 for k in self.classes: self.W[v, k].Start = 0.0
                 self.P[v].Start = 0.0
-            elif 'class' in self.wsv['tree'].DG_prime.nodes[v]:
+            elif 'class' in self.warmstart['tree'].DG_prime.nodes[v]:
                 for k in self.classes:
-                    if k == self.wsv['tree'].DG_prime.nodes[v]['class']:
+                    if k == self.warmstart['tree'].DG_prime.nodes[v]['class']:
                         self.W[v, k].Start = 1.0
                     else:
                         self.W[v, k].Start = 0.0
-                for f in self.features: self.B[v, f].Start = 0.0
+                # for f in self.features: self.B[v, f].Start = 0.0
                 self.P[v].Start = 1.0
-            elif 'pruned' in self.wsv['tree'].DG_prime.nodes[v]:
+            """
+            elif 'pruned' in self.warmstart['tree'].DG_prime.nodes[v]:
                 self.P[v].Start = 0.0
                 for k in self.classes: self.W[v, k].Start = 0.0
                 for f in self.features: self.B[v, f].Start = 0.0
+            """
 
         # Dataset Warm Start Values
         # For each datapoint
@@ -599,47 +573,18 @@ class OBCT:
         #   Activate correct source-terminal path nodes for Q
         #       If node in source-terminal path of datapoint, q_i,n: start = 1
         #       otherwise, q_i,v = 0
-        if self.wsv['data']:
+        """
+        if self.warmstart['data']:
             for i in self.datapoints:
                 for v in self.tree.V:
-                    if v == self.wsv['data'][i][2][-1] and 'correct' in self.wsv['data'][i]:
+                    if v == self.warmstart['data'][i][2][-1] and 'correct' in self.warmstart['data'][i]:
                         self.S[i, v].Start = 1.0
-                    elif v == self.wsv['data'][i][2][-1]:
+                    elif v == self.warmstart['data'][i][2][-1]:
                         self.S[i, v].Start = 0.0
                     else:
                         self.S[i, v].Start = 0.0
-                    if v in self.wsv['data'][i][2]:
+                    if v in self.warmstart['data'][i][2]:
                         self.Q[i, v].Start = 1.0
                     else:
                         self.Q[i, v].Start = 0.0
-
-    ###########################################
-    # Model Extras
-    ###########################################
-    def extras(self):
-        # each feature used exactly once
-        if any((match := elem).startswith('repeat_use') for elem in self.model_extras):
-            self.repeat_use = int(re.sub("[^0-9]", "", match))
-            print(f'Each feature used at most {self.repeat_use} times')
-            self.model.addConstrs(quicksum(self.B[n, f] for n in self.tree.V) <= self.repeat_use for f in self.features)
-
-        # maximum number of branching nodes
-        if any((match := elem).startswith('max_features') for elem in self.model_extras):
-            self.max_features = int(re.sub("[^0-9]", "", match))
-            print(f'No more than {self.max_features} feature(s) used')
-            self.model.addConstr(
-                quicksum(self.B[v, f] for f in self.features for v in self.tree.B) <= self.max_features)
-
-        # exact number of branching nodes
-        if any((match := elem).startswith('num_features') for elem in self.model_extras):
-            self.max_features = int(re.sub("[^0-9]", "", match))
-            print(f'{self.max_features} feature(s) used')
-            self.model.addConstr(
-                quicksum(self.B[v, f] for f in self.features for v in self.tree.B) == self.max_features)
-
-        # regularization
-        if any((match := elem).startswith('regularization') for elem in self.model_extras):
-            self.regularization = int(re.sub("[^0-9]", "", match))
-            print(f'Regularization value of {self.regularization} applied at classification vertices')
-            self.model.addConstrs(quicksum(self.S[i, v] for i in self.datapoints) >= self.regularization * self.P[v]
-                                  for v in self.tree.V)
+        """

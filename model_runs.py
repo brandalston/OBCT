@@ -24,10 +24,10 @@ def main(argv):
     weight = 0
 
     try:
-        opts, args = getopt.getopt(argv, "d:h:t:m:r:e:c:f:l:w:",
+        opts, args = getopt.getopt(argv, "d:h:t:m:r:e:c:f:l:",
                                    ["data_files=", "heights=", "timelimit=",
                                     "models=", "rand_states=", "extras=", "calibration=",
-                                    "results_file=", "log_files=", "weight="])
+                                    "results_file=", "log_files="])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -49,15 +49,13 @@ def main(argv):
             file_out = arg
         elif opt in ("-l", "--log_files"):
             log_files = arg
-        elif opt in ("-w", "--weight"):
-            weight = arg
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|',
                        'Out_Acc', 'In_Acc', 'Sol_Time',
                        'MIP_Gap', 'Obj_Val', 'Obj_Bound', 'Model',
-                       'Num_CB', 'User_Cuts', 'Cuts_per_CB',
-                       'Total_CB_Time', 'INT_CB_Time', 'FRAC_CB_Time', 'CB_Eps',
-                       'Time_Limit', 'Rand_State', 'Calibration', 'Single_Feature_Use', 'Max_Features']
+                       'Tuning_Used', 'Lambda', 'Calibration_Time', 'Rand_State', 'Time_Limit',
+                       'Num_CB', 'User_Cuts', 'Total_CB_Time', 'MIP_Node_Time', 'MIP_Sol_Time',
+                       'Single_Feature_Use', 'Max_Features', 'Regularization']
     output_path = os.getcwd() + '/results_files/'
     log_path = os.getcwd() + '/log_files/'
     if file_out is None:
@@ -79,8 +77,7 @@ def main(argv):
     Change value at your discretion '''
     target = 'target'
     numerical_datasets = ['iris', 'banknote', 'blood', 'climate', 'wine_white', 'wine_red'
-                                                                                'glass', 'image', 'ionosphere',
-                          'parkinsons']
+                          'glass', 'image', 'ionosphere', 'parkinsons']
     categorical_datasets = ['balance_scale', 'car', 'kr_vs_kp', 'house_votes_84', 'hayes_roth', 'breast_cancer',
                             'monk1', 'monk2', 'monk3', 'soybean_small', 'spect', 'tic_tac_toe', 'fico_binary']
     for file in data_files:
@@ -113,14 +110,11 @@ def main(argv):
                             cal_model = OBCT(data=cal_set, tree=cal_tree, target=target, model=modeltype, name=file,
                                              time_limit=0.5 * time_limit, warm_start=lambda_WSV, weight=cal_lambda)
                             cal_model.formulation()
-                            if lambda_WSV is not None: cal_model.warm_start()
+                            if lambda_WSV is not None:
+                                cal_model.warm_start()
                             cal_model.model.update()
-                            print('test:', round(cal_lambda, 2), 'start:',
-                                  str(time.strftime("%I:%M:%S %p", time.localtime())))
-                            if 'MCF' or 'Flow' in modeltype: cal_model.model.optimize()
-                            if 'Benders' in modeltype:
-                                cal_model.model.Params.LazyConstraints = 1
-                                cal_model.model.optimize(SPEED_UP.bendersoct)
+                            print('test:', round(cal_lambda, 2), str(time.strftime("%I:%M:%S %p", time.localtime())))
+                            if 'MCF' or 'OCT' in modeltype: cal_model.model.optimize()
                             if 'CUT' in modeltype:
                                 if 'GRB' or 'ALL' in cb_type:
                                     cal_model.model.optimize()
@@ -139,8 +133,8 @@ def main(argv):
                                 weight, best_acc, best_tree = cal_lambda, cal_acc, cal_tree
                         cal_time = time.perf_counter() - wsm_time_start
                         model_wsm_acc, model_wsm_assgn = UTILS.model_acc(tree=best_tree, target=target, data=model_set)
-                        WSV = {'tree': best_tree, 'data': model_wsm_assgn, 'time': cal_time, 'best': True}
-                        # print('Best calibrated:', best_lambda, best_acc)
+                        WSV = {'tree': best_tree, 'data': model_wsm_assgn, 'time': cal_time, 'best': True, 'use': True}
+                        print('Tuning time:', cal_time)
                     if log_files:
                         log = log_path + '_' + str(file) + '_H:' + str(h) + '_M:' + str(modeltype) + '_W:' + str(weight) \
                               + '_T:' + str(time_limit) + '_R:' + str(i) + '_E:' + str(model_extras)
@@ -161,10 +155,7 @@ def main(argv):
                     # Optimize model with callback if applicable
                     print(f"Optimizing full model w/ lamda: {weight}. Start:",
                           str(time.strftime("%I:%M:%S %p", time.localtime())))
-                    if 'MCF' or 'Flow' in modeltype: opt_model.model.optimize()
-                    if 'Benders' in modeltype:
-                        opt_model.model.Params.LazyConstraints = 1
-                        opt_model.model.optimize(SPEED_UP.bendersoct)
+                    if 'MCF' or 'OCT' in modeltype: opt_model.model.optimize()
                     if 'CUT' in modeltype:
                         if 'GRB' or 'ALL' in cb_type:
                             opt_model.model.optimize()
@@ -179,13 +170,13 @@ def main(argv):
                             # User cb.Lazy FRAC and INT S-Q cuts
                             opt_model.model.Params.LazyConstraints = 1
                             opt_model.model.Params.PreCrush = 1
-                            opt_model.model.optimize(SPEED_UP.both)
+                            opt_model.model.optimize(CALLBACKS.both)
                         if 'INT' in cb_type:
                             # User cb.Lazy INT S-Q cuts
                             opt_model.model.Params.LazyConstraints = 1
-                            if '1' in cb_type: opt_model.model.optimize(SPEED_UP.int1)
-                            if '2' in cb_type: opt_model.model.optimize(SPEED_UP.int2)
-                            if '3' in cb_type: opt_model.model.optimize(SPEED_UP.int3)
+                            if '1' in cb_type: opt_model.model.optimize(CALLBACKS.int1)
+                            if '2' in cb_type: opt_model.model.optimize(CALLBACKS.int2)
+                            if '3' in cb_type: opt_model.model.optimize(CALLBACKS.int3)
                         """
 
                     if opt_model.model.Runtime < time_limit:
@@ -202,7 +193,7 @@ def main(argv):
 
                     # Generate model performance metrics and save to .csv file in .../results_files/
                     UTILS.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
-                                        rand_state=i, results_file=out_file)
+                                        rand_state=i, results_file=out_file, data_name=str(file))
                     # Write LP file
                     if log_files: opt_model.model.write(log + '.lp')
 
@@ -276,8 +267,7 @@ def multiobj(argv):
     Change value at your discretion '''
     target = 'target'
     numerical_datasets = ['iris', 'banknote', 'blood', 'climate', 'wine_white', 'wine_red'
-                                                                                'glass', 'image', 'ionosphere',
-                          'parkinsons']
+                          'glass', 'image', 'ionosphere', 'parkinsons']
     categorical_datasets = ['balance_scale', 'car', 'kr_vs_kp', 'house_votes_84', 'hayes_roth', 'breast_cancer',
                             'monk1', 'monk2', 'monk3', 'soybean_small', 'spect', 'tic_tac_toe', 'fico_binary']
     for file in data_files:
@@ -324,7 +314,7 @@ def multiobj(argv):
                             opt_model.model.optimize()
                         # Generate model performance metrics and save to .csv file in .../results_files/
                         UTILS.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
-                                            rand_state=i, results_file=out_file)
+                                            rand_state=i, results_file=out_file, data_name=str(file))
                         # Write LP file
                         # if log_files: opt_model.model.write(log+'.lp')
 
@@ -399,16 +389,13 @@ def pareto(argv):
                         opt_model.warm_start()
                     opt_model.extras()
                     opt_model.model.update()
-                    opt_model.optimization()
+                    opt_model.model.optmize()
                     UTILS.node_assign(opt_model, tree)
                     UTILS.tree_check(tree)
                     UTILS.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
-                                        rand_state=i, results_file=out_file)
+                                        rand_state=i, results_file=out_file, data_name=str(file))
                     model_wsm_acc, model_wsm_assgn = UTILS.model_acc(tree=tree, target=target, data=train_set)
-                    if 'FlowOCT' == modeltype:
-                        WSV = {'tree': tree, 'data': False}
-                    else:
-                        WSV = {'tree': tree, 'data': model_wsm_assgn}
+                    WSV = {'tree': tree, 'data': model_wsm_assgn}
         # Generate pareto plot of models using run averages of pareto.csv file
         pareto_data = pd.pareto_data = pd.read_csv(os.getcwd() + '/results_files/pareto_test.csv', na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
@@ -418,13 +405,11 @@ def pareto(argv):
             for feature in sub_data['Max_Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max_Features'] == feature]
                 frontier_avg = frontier_avg.append({
-                    'Data': file.replace('.csv', ''), 'H': int(subsub_data['H'].mean()),
-                    '|I|': int(subsub_data['|I|'].mean()),
+                    'Data': file.replace('.csv', ''), 'H': int(subsub_data['H'].mean()), '|I|': int(subsub_data['|I|'].mean()),
                     'Out_Acc': 100 * subsub_data['Out_Acc'].mean(), 'In_Acc': 100 * subsub_data['In_Acc'].mean(),
                     'Sol_Time': subsub_data['Sol_Time'].mean(), 'MIP_Gap': 100 * subsub_data['MIP_Gap'].mean(),
                     'Obj_Val': 100 * subsub_data['Obj_Val'].mean(), 'Obj_Bound': subsub_data['Obj_Bound'].mean(),
-                    'Model': model,
-                    'Num_CB': subsub_data['Num_CB'].mean(), 'User_Cuts': subsub_data['User_Cuts'].mean(),
+                    'Model': model, 'Num_CB': subsub_data['Num_CB'].mean(), 'User_Cuts': subsub_data['User_Cuts'].mean(),
                     'Total_CB_Time': subsub_data['Total_CB_Time'].mean(), 'CB_Eps': subsub_data['CB_Eps'].mean()
                 }, ignore_index=True)
         for plot_type in ['out_acc', 'in_acc', 'time']:
