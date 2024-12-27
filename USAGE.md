@@ -50,9 +50,9 @@ To invoke the `-e model_extras` parameter use the following guide. Each choice u
 
 Note: `model_extras` are not applicable to models: **FOCT**, **FlowOCT**, **BendersOCT**
 ***
-## Bi-objective Modeling
-The -p priority parameter used in our biobjective modeling. A choice of priority between ``data, equal, tree_size`` must be used
-- We hard code a priority values of 10 and 5, giving the former to the priority choice given at the `model_runs.biobjective` function call
+## Multiobjective Modeling
+The -p priority parameter used in our multiobjective modeling. A choice of priority between ``data, equal, tree_size`` must be used
+- We hard code a priority values of 10 and 5, giving the former to the priority choice given at the `model_runs.multiobj` function call
   - ``Equal``, priority value of 5 is given to both
 - Change the hard code of `OBCT.py` to change the priority values
 

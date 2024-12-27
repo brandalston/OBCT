@@ -1,4 +1,4 @@
-Copyright 2023 Brandon C. Alston, Hamidreza Validi
+Copyright 2023 Brandon C. Alston, Hamidreza Validi, Illya V. Hicks
 
 # Optimal Binary Classification Trees
 
@@ -34,10 +34,11 @@ This code uses [python3.x](https://www.python.org/downloads/) (version 3.6 and h
     - m : `str list`, list of model(s) to use
     - r : `int list`, list of random seed(s) to use
       - `rand_seed = [k,...,k]`  for repeat use of randome state `k`
+    - f : `str`, results output file `.csv`
+    - c : `boolean`, calibration of a weighted objective function where we calibrate the hyperparameter using a 15% validation set and 5-fold cross validation
     - p : `str`, objective priority parameter used in bi-objective modeling
     - e : `str list`, model extra(s), if applicable
-    - f : `str`, results output file `.csv`
-    - l : `boolean`, log console to `.txt` file and write model to `.lp` file, both saved to the `\log_files` folder for each model called by user
+    - - l : `boolean`, log console to `.txt` file and write model to `.lp` file, both saved to the `\log_files` folder for each model called by user
 Note:
 - We assume the target column is labeled `'target'`. Change the hard code in `model_runs.py` to change the according target column
 - If results output file `-f file` is `None` the `models_run.py` calls automatically generates a `.csv` results file with the parameters of the function call as the file name saved to the `\results_files` folder
@@ -55,21 +56,21 @@ models = ['MCF1', 'MCF2', 'CUT1-ALL', 'CUT2-FRAC-3']
 time_limit = 3600
 extras = ['max_features-25']
 rand_seed = [13, 58, 94, None]
-tuning = None
+tuning = False
 file = 'example_code_output.csv'
 consol_log = False
 model_runs.main(
-  ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
+  ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit, "-c", tuning,
    "-e", extras, "-r", rand_seed, "-f", file, "-l", consol_log])
 ```
 To run from terminal do the following,
 ```bash
-python3 import model_runs; model_runs.main -d ['soybean-small','monk3','car','iris','climate'] -h [3,4,5] -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -e ['max_features-25'] -r [13, 58, 94, None] -c None -f 'test_results.csv' -l False
+python3 import model_runs; model_runs.main -d ['soybean-small','monk3','car','iris','climate'] -h [3,4,5] -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -e ['max_features-25'] -r [13, 58, 94, None] -c False -f 'test_results.csv' -l False
 ```
 
 ***
 ## Bi-objective Modeling
-Call the `biobjective` function within a python file as follows to generate a model using the heirarchical modeling capabilities of Gurobi
+Call the `multiobj` function within a python file as follows to generate a model using the heirarchical modeling capabilities of Gurobi
 
 ```python
 import model_runs
@@ -82,13 +83,13 @@ rand_seed = [13, 58, 94, None]
 priorities = ['data','equal']
 file = 'biobj_example.csv'
 consol_log = False
-model_runs.biobjective(
+model_runs.multiobj(
   ["-d", data_names, "-h", height, "-m", models, "-t", time_limit,
    "-p", priorities, "-r", rand_seed, "-f", file, "-l", consol_log])
 ```
 To run from terminal do the following,
 ```bash
-python3 import model_runs; model_runs.biobjective -d ['ionosphere', 'monk2', 'breat_cancer', 'climate'] -h 5 -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -p ['data','equal'] -r [13, 58, 94, None] -f 'biobj_example.csv' -l False
+python3 import model_runs; model_runs.multiobj -d ['ionosphere', 'monk2', 'breat_cancer', 'climate'] -h 5 -m ['MCF1','MCF2','CUT1-ALL','CUT2-FRAC-3'] -t 3600 -p ['data','equal'] -r [13, 58, 94, None] -f 'biobj_example.csv' -l False
 ```
 
 ***
