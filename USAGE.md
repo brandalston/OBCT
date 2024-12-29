@@ -1,15 +1,15 @@
 # MODEL FUNCTIONALITY
 ***
 ***
-We offer the user the ability to control both integer and fractional separation using the three types of violating rules in models **CUT1** and **CUT2**.
+We offer the user the ability to control both integer and fractional separation using the three types of violating rules in models **POKE** and **CUT**. Note that **POKE** is equivalent to **CUT_W** in the paper. We invoke a different name in implementation due to the similarity in parsing the strings ``CUT, CUT_W``.
 
-By default, models **CUT1** and **CUT2** invoke gurobi [lazy](https://www.gurobi.com/documentation/9.5/refman/lazy.html) parameters = 3, constraints that cut off the relaxation solution at the root node are pulled in for separation constraints.
+By default, models **POKE** and **CUT** invoke gurobi [lazy](https://www.gurobi.com/documentation/9.5/refman/lazy.html) parameters = 3, constraints that cut off the relaxation solution at the root node are pulled in for separation constraints.
 
 ***
 ### Fractional Separation
 There are a number of ways to invoke the fractional separation procedures outlined in the paper. 
 For fractional procedures use the following syntax where `#` specifies the user type of fractional cut (1,2,3)
-- ex. `CUT1-FRAC-1, CUT2-FRAC-3-ROOT`
+- ex. `POKE-FRAC-1, CUT-FRAC-3-ROOT`
   - `#-ROOT` for only adding user fractional cuts at the root node of the branch and bound tree
 - `1` = all violating cuts in 1,v path
 - `2` = first found violating cut in 1,v path
@@ -19,7 +19,7 @@ For fractional procedures use the following syntax where `#` specifies the user 
 ***
 ### Integer Separation
 For user controlled integral separation procedures use the following syntax where `#` specifies the user type of integer cut (1,2,3)
-- ex. `CUT1-INT-1, CUT2-INT-3`
+- ex. `POKE-INT-1, CUT-INT-3`
 - `1` = all violating cuts in 1,v path
 - `2` = first found violating cut in 1,v path
 - `3` = most violating cut closest to root in 1,v path
@@ -28,7 +28,7 @@ For user controlled integral separation procedures use the following syntax wher
 ***
 ### Integer & Fractional Separation
 We also control integer and fractional separation using gurobi callback. To invoke such functionality use the following
-- ex. `CUT1-BOTH-I2-F2`, `CUT2-BOTH-I1-F3`
+- ex. `POKE-BOTH-I2-F2`, `CUT-BOTH-I1-F3`
 - `#` specifies the violating rules type
 - `BOTH` must be in the model name
 - Must specify a rule type for both integral and fractional
