@@ -201,8 +201,8 @@ class OBCT:
                             for i in self.datapoints)
         """
 
-        """ MCF1 Model Connectivity Constraints """
-        if 'MCF1' in self.modeltype:
+        """ SCF Model Connectivity Constraints """
+        if 'SCF' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS, lb=0, name='Z')
             # Source-terminal vertex vars
@@ -247,8 +247,8 @@ class OBCT:
                             self.Q[i, u] <= quicksum(self.B[v, f] for f in self.features if self.data.at[i, f] == 1)
                             for i in self.datapoints)
 
-        """ MCF2 Model Connectivity Constraints """
-        if 'MCF2' in self.modeltype:
+        """ MCF Model Connectivity Constraints """
+        if 'MCF' in self.modeltype:
             # Flow vars
             self.Z = self.model.addVars(self.datapoints, self.tree.V, self.tree.DG_prime.edges, vtype=GRB.CONTINUOUS,
                                         lb=0, name='Z')
@@ -309,8 +309,8 @@ class OBCT:
             self.model.addConstrs(quicksum(self.S[i, v] for v in self.tree.V) <= 1
                                   for i in self.datapoints)
 
-        """ CUT1 Model Connectivity Constraints """
-        if 'CUT1' in self.modeltype:
+        """ CUT_W Model Connectivity Constraints """
+        if 'POKE' == self.modeltype:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
 
@@ -393,8 +393,8 @@ class OBCT:
                         if v == 0: continue
                         self.model.addConstrs(self.S[i, v] <= self.Q[i, c] for c in self.tree.path[v][1:])
 
-        """ CUT2 Model Connectivity Constraints """
-        if 'CUT2' in self.modeltype:
+        """ CUT Model Connectivity Constraints """
+        if 'CUT' in self.modeltype:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.CONTINUOUS, name='Q')
 

@@ -99,7 +99,7 @@ def main(argv):
                     print('\n' + str(file) + ', H_' + str(h) + ', ' + str(modeltype) + ', Rand_' + str(i)
                           + '. Run Start: ' + str(time.strftime("%I:%M:%S %p", time.localtime())))
                     # Log .lp and .txt files name
-                    WSV = None
+                    WSV = {'use': False, 'time': 0}
                     if tuning:
                         wsm_time_start = time.perf_counter()
                         best_tree, best_acc = {}, 0
@@ -114,8 +114,8 @@ def main(argv):
                                 cal_model.warm_start()
                             cal_model.model.update()
                             print('test:', round(cal_lambda, 2), str(time.strftime("%I:%M:%S %p", time.localtime())))
-                            if 'MCF' or 'OCT' in modeltype: cal_model.model.optimize()
-                            if 'CUT' in modeltype:
+                            if 'CF' in modeltype: cal_model.model.optimize()
+                            if 'CUT' or 'POKE' in modeltype:
                                 if 'GRB' or 'ALL' in cb_type:
                                     cal_model.model.optimize()
                                 if 'FRAC' in cb_type:
@@ -148,15 +148,15 @@ def main(argv):
                     # Add connectivity constraints according to model type
                     opt_model.formulation()
                     # Update with warm start values if applicable
-                    if WSV is not None: opt_model.warm_start()
+                    if WSV['use']: opt_model.warm_start()
                     # Add any model extras if applicable
                     if model_extras is not None: opt_model.extras()
                     opt_model.model.update()
                     # Optimize model with callback if applicable
                     print(f"Optimizing full model w/ lamda: {weight}. Start:",
                           str(time.strftime("%I:%M:%S %p", time.localtime())))
-                    if 'MCF' or 'OCT' in modeltype: opt_model.model.optimize()
-                    if 'CUT' in modeltype:
+                    if 'CF' in modeltype: opt_model.model.optimize()
+                    if 'CUT' or 'POKE' in modeltype:
                         if 'GRB' or 'ALL' in cb_type:
                             opt_model.model.optimize()
                         if 'FRAC' in cb_type:
@@ -211,10 +211,9 @@ def multiobj(argv):
     model_extras = None
 
     try:
-        opts, args = getopt.getopt(argv, "d:h:t:m:r:p:e:f:l:c:",
-                                   ["data_files=", "heights=", "timelimit=",
-                                    "models=", "rand_states=", "priority=", "extras=",
-                                    "results_file=", "log_files", "calibration"])
+        opts, args = getopt.getopt(argv, "d:h:t:m:r:p:e:f:l:",
+                                   ["data_files=", "heights=", "timelimit=", "models=",
+                                    "rand_states=", "priority=", "extras=", "results_file=", "log_files"])
     except getopt.GetoptError:
         sys.exit(2)
     for opt, arg in opts:
@@ -236,8 +235,6 @@ def multiobj(argv):
             file_out = arg
         elif opt in ("-l", "--log_files"):
             log_files = arg
-        elif opt in ("-c", "--calibration"):
-            calibration = arg
 
     ''' Columns of the results file generated '''
     summary_columns = ['Data', 'H', '|I|',
@@ -400,7 +397,7 @@ def pareto(argv):
         pareto_data = pd.pareto_data = pd.read_csv(os.getcwd() + '/results_files/pareto_test.csv', na_values='?')
         file_data = pareto_data[pareto_data['Data'] == file.replace('.csv', '')]
         frontier_avg = pd.DataFrame(columns=summary_columns)
-        for model in ['FlowOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']:
+        for model in ['FlowOCT', 'SCF', 'MCF', 'POKE', 'CUT']:
             sub_data = file_data.loc[file_data['Model'] == model]
             for feature in sub_data['Max_Features'].unique():
                 subsub_data = sub_data.loc[sub_data['Max_Features'] == feature]

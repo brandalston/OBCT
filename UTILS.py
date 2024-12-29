@@ -344,8 +344,8 @@ def pareto_plot(data, type='out_acc'):
     ax2.set_xticklabels([f'h={h}' for h in [2, 3, 4, 5]])
     ax1.set_xlabel('Num. Branching Vertices')
     ax1.xaxis.set_ticks(np.arange(1, max(data['Max_Features'].unique()) + 1, 5))
-    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P', 'FlowOCT': '*'}
-    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red', 'FlowOCT': 'k'}
+    markers = {'SCF': 'X', 'MCF': 'p', 'POKE': 's', 'CUT': 'P', 'FlowOCT': '*'}
+    colors = {'SCF': 'blue', 'MCF': 'orange', 'POKE': 'green', 'CUT': 'red', 'FlowOCT': 'k'}
 
     for model in models:
         for h in [2, 3, 4, 5]:
@@ -364,7 +364,6 @@ def pareto_plot(data, type='out_acc'):
             if domed_pts: ax1.scatter(dominated_points.loc[data['Model'] == model]['Max_Features'],
                                       dominated_points.loc[data['Model'] == model]['Out_Acc'],
                                       marker=markers[model], color=colors[model], alpha=0.2)
-
         elif type == 'in_acc':
             ax1.scatter(dominating_points.loc[data['Model'] == model]['Max_Features'],
                         dominating_points.loc[data['Model'] == model]['In_Acc'],
@@ -397,8 +396,8 @@ def biobj_plot(raw_data, name, height, type=None, priority='data'):
 
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    markers = {'MCF1': 'X', 'MCF2': 'p', 'CUT1': 's', 'CUT2': 'P'}
-    colors = {'MCF1': 'blue', 'MCF2': 'orange', 'CUT1': 'green', 'CUT2': 'red'}
+    markers = {'SCF': 'X', 'MCF': 'p', 'POKE': 's', 'CUT': 'P'}
+    colors = {'SCF': 'blue', 'MCF': 'orange', 'POKE': 'green', 'CUT': 'red'}
 
     models = data['Model'].unique()
     for model in models:

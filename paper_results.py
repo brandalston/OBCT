@@ -6,9 +6,9 @@ numerical_datasets = ['iris', 'blood', 'climate', 'ionosphere']
 categorical_datasets = ['balance_scale', 'car', 'kr_vs_kp', 'house_votes_84', 'hayes_roth', 'breast_cancer',
                         'monk1', 'monk2', 'monk3', 'soybean_small', 'spect', 'tic_tac_toe', 'fico_binary']
 heights = [2, 3, 4, 5]
-models = ['MCF1', 'MCF2', 'CUT1-GRB', 'CUT2-GRB', 'CUT1-ALL', 'CUT2-ALL',
-          'CUT1-FRAC1-ROOT', 'CUT1-FRAC2-ROOT', 'CUT1-FRAC3-ROOT',
-          'CUT2-FRAC1-ROOT', 'CUT2-FRAC2-ROOT', 'CUT2-FRAC3-ROOT']
+models = ['SCF', 'MCF', 'POKE-GRB', 'CUT-GRB', 'POKE-ALL', 'CUT-ALL',
+          'POKE-FRAC1-ROOT', 'POKE-FRAC2-ROOT', 'POKE-FRAC3-ROOT',
+          'CUT-FRAC1-ROOT', 'CUT-FRAC2-ROOT', 'CUT-FRAC3-ROOT']
 time_limit = 3600
 extras = None
 rand_states = [138, 15, 89, 42, 0]
@@ -29,8 +29,8 @@ DL85.main(["-d", numerical_datasets+categorical_datasets, "-h", heights,
 GOSDTg.main(["-d", numerical_datasets+categorical_datasets, "-h", heights,
              "-t", time_limit, "-r", rand_states, "-f", file])
 
-tuning = False
 # Accuracy and solution time (gap) results w/out warm starts
+tuning = False
 model_runs.main(["-d", numerical_datasets + categorical_datasets, "-h", heights, "-m", models, "-c", tuning,
                  "-t", time_limit, "-r", rand_states, "-f", file, "-l", False, "-e", None])
 
@@ -44,28 +44,29 @@ GOSDTg.main(["-d", numerical_datasets+categorical_datasets, "-h", heights,
              "-t", time_limit, "-r", rand_states, "-f", file])
 
 # Bi-objective results
-models = ['MCF1', 'MCF2', 'CUT1, CUT2']
+models = ['SCF', 'MCF', 'POKE, CUT']
 priorities = ['data', 'equal']
 model_runs.multiobj(["-d", ['breast_cancer'], "-h", [5], "-m", models, "-t", 3600,
                      "-p", priorities, "-r", rand_states, "-f", file, "-l", log_file])
 
 # Pareto frontier results
-models = ['FlowOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+models = ['FlowOCT', 'SCF', 'MCF', 'POKE', 'CUT']
 data_names = ['soybean_small', 'monk1', 'monk3', 'house_votes_84']
 model_runs.pareto(["-d", data_names, "-h", 5, "-m", models,
                    "-t", 3600, "-r", rand_states, "-f", None])
 """
 
 categorical_datasets = ['soybean_small']
-models = ['MCF1', 'CUT1']
 heights = [5]
 time_limit = 3600
 extras = None
 rand_states = [138]
-tuning = True
+tuning = False
 file = 'paper_results.csv'
 log_file = False
 FB_OCT.main(["-d", categorical_datasets, "-h", heights, "-m", ['Benders', 'Flow'], "-c", tuning,
              "-t", time_limit, "-r", rand_states, "-f", file, "-l", log_file])
+
+models = ['SCF', 'MCF', 'POKE', 'CUT']
 model_runs.main(["-d", categorical_datasets, "-h", heights, "-m", models, "-c", tuning,
                  "-t", time_limit, "-r", rand_states, "-f", file, "-l", False, "-e", None])
