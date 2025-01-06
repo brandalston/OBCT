@@ -88,11 +88,11 @@ def main(argv):
                 # Log files
                 for modeltype in modeltypes:
                     print('\n'+str(file) + ', H_' + str(h) + ', ' + str(modeltype) + 'OCT, Rand_' + str(i)
-                          + ', Tuning_'+str(tuning)+'. Run Start: ' + str(time.strftime("%I:%M:%S %p", time.localtime())))
+                          + ', Tuning_'+str(tuning)+'. Start: ' + str(time.strftime("%I:%M:%S %p", time.localtime())))
                     # Log .lp and .txt files name
                     # FlowOCT model
                     if 'Flow' in modeltype:
-                        best_lambda, cal_time, best_cal_model = 0, 0, None
+                        weight, cal_time, best_cal_model = 0, 0, None
                         if tuning:
                             wsm_time_start = time.perf_counter()
                             best_tree, best_acc, lambda_WSV = {}, 0, None
@@ -116,21 +116,20 @@ def main(argv):
                                               'beta': cal_model.model.getAttr("X", cal_model.beta),
                                               'p': cal_model.model.getAttr("X", cal_model.p), 'cal_acc': cal_acc}
                                 if cal_acc > best_acc:
-                                    best_lambda, best_acc, best_cal_model = cal_lambda, cal_acc, cal_model
+                                    weight, best_acc, best_cal_model = cal_lambda, cal_acc, cal_model
                             cal_time = time.perf_counter() - wsm_time_start
                             best_WSV = {'model': best_cal_model, 'b': best_cal_model.model.getAttr("X", best_cal_model.b),
                                         'beta': best_cal_model.model.getAttr("X", best_cal_model.beta),
                                         'p': best_cal_model.model.getAttr("X", best_cal_model.p)}
                             best_ws_branching, best_ws_leaf, best_ws_pruned = FlowOCTutils.get_tree_topology(best_WSV)
-                            print(f'Total tuning time {cal_time}')
+                            print(f'Total tuning time {round(cal_time,4)}')
                         OCT_tree = OCT_Tree(d=h)
-                        primal = FlowOCT(data=model_set, label=target, tree=OCT_tree, _lambda=best_lambda,
+                        primal = FlowOCT(data=model_set, label=target, tree=OCT_tree, _lambda=weight,
                                          time_limit=time_limit, mode='classification')
                         primal.create_primal_problem()
                         if tuning: primal.warm_start(best_ws_branching, best_ws_leaf, best_ws_pruned)
                         primal.model.update()
-                        if tuning: print(f'Optimizing Model w/ calibrated lambda: {best_lambda}. Start:',str(time.strftime("%I:%M:%S %p", time.localtime())))
-                        else: print('Optimizing model. Start', str(time.strftime("%I:%M:%S %p", time.localtime())))
+                        print(f'Optimizing Model w/ lambda: {weight}. Start:',str(time.strftime("%I:%M:%S %p", time.localtime())))
                         primal.model.optimize()
                         if primal.model.RunTime < time_limit:
                             print('Optimal solution found in ' + str(round(primal.model.Runtime, 2)) + 's. (' + str(
@@ -148,12 +147,12 @@ def main(argv):
                                 [file.replace('.csv', ''), h, len(model_set),
                                  test_acc, train_acc, primal.model.Runtime,
                                  primal.model.MIPGap, primal.model.ObjVal, primal.model.ObjBound, 'FlowOCT',
-                                 tuning, best_lambda, cal_time, i, time_limit])
+                                 tuning, weight, cal_time, i, time_limit])
                             results.close()
                         # if log_files: primal.model.write(log + '.lp')
                     # BendersOCT model
                     elif 'Benders' in modeltype:
-                        best_lambda, cal_time, best_cal_model = 0, 0, None
+                        weight, cal_time, best_cal_model = 0, 0, None
                         if tuning:
                             wsm_time_start = time.perf_counter()
                             best_tree, best_acc, lambda_WSV = {}, 0, None
@@ -177,22 +176,21 @@ def main(argv):
                                               'beta': cal_model.model.getAttr("X", cal_model.beta),
                                               'p': cal_model.model.getAttr("X", cal_model.p), 'cal_acc': cal_acc, 'cal_lambda': cal_model._lambda}
                                 if cal_acc > best_acc:
-                                    best_lambda, best_acc, best_cal_model = cal_lambda, cal_acc, cal_model
+                                    weight, best_acc, best_cal_model = cal_lambda, cal_acc, cal_model
                             cal_time = time.perf_counter() - wsm_time_start
                             best_WSV = {'model': best_cal_model,
                                         'b': best_cal_model.model.getAttr("X", best_cal_model.b),
                                         'beta': best_cal_model.model.getAttr("X", best_cal_model.beta),
                                         'p': best_cal_model.model.getAttr("X", best_cal_model.p)}
                             best_ws_branching, best_ws_leaf, best_ws_pruned = FlowOCTutils.get_tree_topology(best_WSV)
-                            print(f'Total tuning time {cal_time}')
+                            print(f'Total tuning time {round(cal_time,4)}')
                         OCT_tree = OCT_Tree(d=h)
-                        master = BendersOCT(data=model_set, label=target, tree=OCT_tree, _lambda=best_lambda,
+                        master = BendersOCT(data=model_set, label=target, tree=OCT_tree, _lambda=weight,
                                             time_limit=time_limit, mode='classification')
                         master.create_master_problem()
                         if tuning: master.warm_start(best_ws_branching, best_ws_leaf, best_ws_pruned)
                         master.model.update()
-                        if tuning: print(f'Optimizing Model w/ calibrated lambda: {best_lambda}. Start:', str(time.strftime("%I:%M:%S %p", time.localtime())))
-                        else: print('Optimizing model. Start', str(time.strftime("%I:%M:%S %p", time.localtime())))
+                        print(f'Optimizing Model w/ lambda: {weight}. Start:', str(time.strftime("%I:%M:%S %p", time.localtime())))
                         master.model.optimize(FlowOCTutils.mycallback)
                         if master.model.RunTime < time_limit:
                             print('Optimal solution found in ' + str(round(master.model.Runtime, 2)) + 's. (' + str(
@@ -210,7 +208,7 @@ def main(argv):
                                 [file.replace('.csv', ''), h, len(model_set),
                                  test_acc, train_acc, master.model.Runtime,
                                  master.model.MIPGap, master.model.ObjVal, master.model.ObjBound, 'BendersOCT',
-                                 tuning, best_lambda, cal_time, i, time_limit,
+                                 tuning, weight, cal_time, i, time_limit,
                                  master.model._callback_counter_integer, master.model._callback_counter_integer_success,
                                  master.model._total_callback_time_integer])
                             results.close()
