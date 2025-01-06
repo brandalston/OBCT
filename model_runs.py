@@ -94,7 +94,7 @@ def main(argv):
                 model_set = pd.concat([train_set, cal_set])
                 for modeltype in modeltypes:
                     cb_type = modeltype[5:]
-                    if 'CUT' in modeltype and len(cb_type) == 0:
+                    if 'CUT' or 'POKE' in modeltype and len(cb_type) == 0:
                         cb_type = 'ALL'
                     print('\n' + str(file) + ', H_' + str(h) + ', ' + str(modeltype) + ', Rand_' + str(i)
                           + '. Run Start: ' + str(time.strftime("%I:%M:%S %p", time.localtime())))

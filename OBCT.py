@@ -57,7 +57,7 @@ class OBCT:
 
         # Gurobi optimization parameters
         self.cb_type = self.modeltype[5:]
-        if 'CUT' in self.modeltype and len(self.cb_type) == 0:
+        if 'CUT' or 'POKE' in self.modeltype and len(self.cb_type) == 0:
             self.cb_type = 'ALL'
         self.Lazycuts = False
         self.rootnode = False
@@ -156,6 +156,7 @@ class OBCT:
                     self.S[i, v] for i in self.datapoints for v in self.tree.V if v != 0)
                 - self.branch_weight * quicksum(self.B[v, f] for v in self.tree.B for f in self.features),
                 GRB.MAXIMIZE)
+
         # Pruned vertices not assigned to class
         # P[v] = sum(W[v,k], k in K) for v in V
         self.model.addConstrs(self.P[v] == quicksum(self.W[v, k] for k in self.classes)
@@ -173,15 +174,15 @@ class OBCT:
             for f in self.features:
                 self.B[v, f].ub = 0
 
-        """
-        # Terminal vertex of datapoint matches datapoint class (not applicable to Benders decomposition of MCF2)
-        # S[i,v] <= W[v,y_i=k] for v in V, k in K
-        if 'Benders' not in self.modeltype:
-            for v in self.tree.V:
-                self.model.addConstrs(self.S[i, v] <= self.W[v, self.data.at[i, self.target]]
-                                      for i in self.datapoints)
 
-        # Benders Model Connectivity Constraints
+        # Terminal vertex of datapoint matches datapoint class
+        # S[i,v] <= W[v,y_i=k] for v in V, k in K
+        for v in self.tree.V:
+            self.model.addConstrs(self.S[i, v] <= self.W[v, self.data.at[i, self.target]]
+                                  for i in self.datapoints)
+
+        """
+        # Benders MCF Model Connectivity Constraints
         if 'Benders' in self.modeltype:
             # Source-terminal vertex vars
             self.Q = self.model.addVars(self.datapoints, self.tree.V, vtype=GRB.BINARY, name='Q')
