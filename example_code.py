@@ -10,21 +10,21 @@ extras = ['max_features-25']
 seeds = [13, 58, 94, None]
 model_runs.main(
     ["-d", data_names, "-h", heights, "-m", models, "-t", time_limit,
-    "-e", extras, "-r", seeds, "-f", 'example_code_output.csv', "-l", False])
+     "-e", extras, "-r", seeds, "-f", 'example_code_output.csv', "-l", False])
 
 
 # Bi-objective example
 height = 4
-models = ['FlowOCT', 'MCF1', 'MCF2', 'CUT1', 'CUT2']
+models = ['FlowOCT', 'SCF', 'MCF', 'POKE', 'CUT']
 seeds = [15, 78, 0]
 priorities = ['data','equal']
 data_names = ['hayes_roth', 'house_votes_84']
-model_runs.biobjective(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-p", priorities,
-                        "-r", seeds, "-f", 'biobj_example.csv', "-l", False])
+model_runs.multiobj(["-d", data_names, "-h", height, "-m", models, "-t", 3600, "-p", priorities,
+                     "-r", seeds, "-f", 'biobj_example.csv', "-l", False])
 
 
 # Pareto frontier example
-models = ['MCF1', 'MCF2', 'CUT1-GRB', 'CUT2-ALL']
+models = ['SCF', 'MCF', 'POKE-GRB', 'CUT-ALL']
 seeds = [15, 78, 0]
 data_names = ['hayes_roth', 'house_votes_84']
 model_runs.pareto(["-d", data_names, "-h", 5, "-m", models, "-t", 3600, "-r", seeds, "-f", 'pareto_example.csv'])
@@ -41,7 +41,7 @@ rand_state = 15
 train_set, test_set = train_test_split(data, train_size=0.65, random_state=rand_state)
 
 tree = TREE(h=5)
-opt_model = OBCT(data=train_set, tree=tree, target='target', model='CUT', name='ionosphere',
+opt_model = OBCT(data=train_set, tree=tree, target='target', model='CUT-GRB', name='ionosphere',
                  time_limit=3600, warm_start={'use': False, 'time': 0})
 opt_model.formulation()
 opt_model.extras()
