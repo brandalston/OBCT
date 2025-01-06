@@ -13,7 +13,7 @@ file = 'paper_results.csv'
 log_file = False
 
 # Accuracy and solution time (gap) results w/ warm starts
-
+"""
 # run 1
 heights = [2]
 set_a = ['balance_scale', 'breast_cancer', 'car', 'hayes_roth', 'house_votes_84', 'iris',
@@ -49,6 +49,7 @@ heights = [5]
 set_d = ['house_votes_84']
 FB_OCT.main(["-d", set_d, "-h", heights, "-m", ['Benders'], "-c", tuning,
              "-t", time_limit, "-e", extras, "-r", rand_states, "-f", file, "-l", log_file])
+"""
 # run 3
 heights = [2]
 set_a = ['climate', 'kr_vs_kp']
@@ -58,6 +59,7 @@ heights = [3]
 set_b = ['blood', 'breast_cancer', 'car']
 FB_OCT.main(["-d", set_b, "-h", heights, "-m", ['Benders'], "-c", tuning,
              "-t", time_limit, "-e", extras, "-r", rand_states, "-f", file, "-l", log_file])
+"""
 # run 4
 heights = [3]
 set_a = ['climate', 'fico_binary', 'house_votes_84', 'kr_vs_kp', 'spect']
@@ -92,7 +94,7 @@ set_a = ['car', 'climate', 'fico_binary', 'hayes_roth', 'ionosphere']
 FB_OCT.main(["-d", set_a, "-h", heights, "-m", ['Benders'], "-c", tuning,
              "-t", time_limit, "-e", extras, "-r", rand_states, "-f", file, "-l", log_file])
 
-categorical_datasets = ['monk1']
+categorical_datasets = ['climate']
 heights = [5]
 time_limit = 3600
 extras = None
@@ -100,9 +102,6 @@ rand_states = [138]
 tuning = False
 file = 'paper_results.csv'
 log_file = False
-FB_OCT.main(["-d", categorical_datasets, "-h", heights, "-m", ['Benders', 'Flow'], "-c", tuning,
+FB_OCT.main(["-d", categorical_datasets, "-h", heights, "-m", ['Benders'], "-c", tuning,
              "-t", time_limit, "-r", rand_states, "-f", file, "-l", log_file])
-
-models = ['SCF', 'MCF', 'POKE', 'CUT']
-model_runs.main(["-d", categorical_datasets, "-h", heights, "-m", models, "-c", tuning,
-                 "-t", time_limit, "-r", rand_states, "-f", file, "-l", False, "-e", None])
+"""

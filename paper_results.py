@@ -1,8 +1,8 @@
 import model_runs
-from Benchmark_Methods import FB_OCT#, DL85, GOSDTg
+from Benchmark_Methods import FB_OCT, DL85, GOSDTg
 
 """
-Experiments found in our manuscript
+Code to run the experiments found in our manuscript.
 """
 
 numerical_datasets = ['iris', 'blood', 'climate', 'ionosphere']
