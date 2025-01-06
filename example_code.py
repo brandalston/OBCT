@@ -41,11 +41,12 @@ rand_state = 15
 train_set, test_set = train_test_split(data, train_size=0.65, random_state=rand_state)
 
 tree = TREE(h=5)
-opt_model = OBCT(data=train_set, tree=tree, target='target', model='CUT1',
-                 time_limit=3600, model_extras=['max_features-25'], warm_start=None)
+opt_model = OBCT(data=train_set, tree=tree, target='target', model='CUT', name='ionosphere',
+                 time_limit=3600, warm_start={'use': False, 'time': 0})
 opt_model.formulation()
 opt_model.extras()
 opt_model.model.update()
-opt_model.optimization()
+opt_model.model.optimize()
 UTILS.model_summary(opt_model=opt_model, tree=tree, test_set=test_set,
                     rand_state=rand_state, results_file=None, data_name='ionosphere')
+
