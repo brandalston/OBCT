@@ -21,7 +21,7 @@ log_file = False
 
 # Accuracy and solution time (gap) results w/ warm starts
 model_runs.main(["-d", numerical_datasets + categorical_datasets, "-h", heights, "-m", models, "-c", tuning,
-                 "-t", time_limit, "-r", rand_states, "-f", file, "-l", False, "-e", None])
+                 "-t", time_limit, "-r", rand_states, "-f", file, "-l", log_file, "-e", extras])
 
 FB_OCT.main(["-d", numerical_datasets+categorical_datasets, "-h", heights, "-m", ['Flow', 'Benders'], "-c", tuning,
              "-t", time_limit, "-e", extras, "-r", rand_states, "-f", file, "-l", log_file])
@@ -35,7 +35,7 @@ GOSDTg.main(["-d", numerical_datasets+categorical_datasets, "-h", heights,
 # Accuracy and solution time (gap) results w/out warm starts
 tuning = False
 model_runs.main(["-d", numerical_datasets + categorical_datasets, "-h", heights, "-m", models, "-c", tuning,
-                 "-t", time_limit, "-r", rand_states, "-f", file, "-l", False, "-e", None])
+                 "-t", time_limit, "-r", rand_states, "-f", file, "-l", log_file, "-e", extras])
 
 FB_OCT.main(["-d", numerical_datasets+categorical_datasets, "-h", heights, "-m", ['Flow', 'Benders'], "-c", tuning,
              "-t", time_limit, "-e", extras, "-r", rand_states, "-f", file, "-l", log_file])
