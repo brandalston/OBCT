@@ -134,12 +134,18 @@ For understanding model functionality associated with integer and fractional sep
 `example_code.py` contains additional instances of the above and how to call `OBCT` directly without using `model_runs.py`
 ***
 
+## Recreation of Experiments in ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](http://arxiv.org/abs/2206.04857)
+To recreate all results found in the paper ["Mixed Integer Linear Optimization Formulations for Learning Optimal Binary Classification Trees"](http://arxiv.org/abs/2206.04857) run the `paper_results.py` script.
+***
+
 ## Acknowledgments
 The code found in `BendersOCT.py`, `FlowOCT.py`, `FlowOCTTree.py,` and `FlowOCTutils.py` are taken directly from the [Strong Tree](https://github.com/pashew94/StrongTree/) GitHub public repository.
 The code found in `Quant-BnB-2D.jl`, `Quant-BnB-3D.jl`, `Algorithms.jl`, `lowerbound_middle.jl` are taken directly from the [Quant-BnB](https://github.com/mengxianglgal/Quant-BnB) GitHub public repository.
 
 All rights and ownership are to the original owners. 
 
+
+JOC-2023-03-OA-0068
 ***
 ***
 
